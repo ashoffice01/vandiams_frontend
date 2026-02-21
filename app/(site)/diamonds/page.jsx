@@ -1,79 +1,108 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { diamonds as diamondData } from "../data/diamonds";
+import { diamonds as diamondsData } from "../data/diamonds";
 import FilterSection from "../components/FilterSection";
 import DiamondCard from "../components/DiamondCard";
 
 export default function Page() {
-  const [filters, setFilters] = useState({
-    shape: "Round",
-    carat: [2.0, 16.04],
-    price: [510, 38400],
-    color: [],
-    clarity: [],
-    cut: [],
-    quickShip: false,
-    report: [],
-    priority: "View All",
-    sort: "",
-  });
+const [filters, setFilters] = useState({
+  shape: "Round",
+
+  carat: [0, 20],
+  price: [0, 50000],
+
+  colorRange: [0, 6],
+  clarityRange: [0, 7],
+  cutRange: [0, 3],
+
+  lwRatio: [0.5, 3],
+  table: [0, 100],
+  depth: [0, 100],
+
+  polishRange: [0, 4],
+  fluorRange: [0, 4],
+  symmetryRange: [0, 3],
+
+  quickShip: false,
+  report: [],
+});
 
   /* ==============================
      FILTERING LOGIC
   ===============================*/
-  const filteredDiamonds = useMemo(() => {
-    let result = diamondData.filter((d) => {
-      return (
-        // Shape
-        (!filters.shape || d.shape === filters.shape) &&
+const COLOR_SCALE = ["J", "I", "H", "G", "F", "E", "D"];
+const CLARITY_SCALE = [
+  "I1",
+  "SI2",
+  "SI1",
+  "VS2",
+  "VS1",
+  "VVS2",
+  "VVS1",
+  "IF",
+];
+const CUT_SCALE = ["Good", "Very Good", "Excellent", "Ideal"];
+const POLISH_SCALE = ["Fair", "Good", "Very Good", "Excellent", "Ideal"];
+const FLUOR_SCALE = ["Very Strong", "Strong", "Medium", "Faint", "None"];
+const SYMMETRY_SCALE = ["Good", "Very Good", "Excellent", "Ideal"];
+const filteredDiamonds = diamondsData.filter((d) => {
+  return (
+    // Shape
+    d.shape === filters.shape &&
 
-        // Carat range
-        d.carat >= filters.carat[0] &&
-        d.carat <= filters.carat[1] &&
+    // Carat
+    d.carat >= filters.carat[0] &&
+    d.carat <= filters.carat[1] &&
 
-        // Price range
-        d.price >= filters.price[0] &&
-        d.price <= filters.price[1] &&
+    // Price
+    d.price >= filters.price[0] &&
+    d.price <= filters.price[1] &&
 
-        // Cut
-        (filters.cut.length === 0 ||
-          filters.cut.includes(d.cut)) &&
+    // Color range
+    COLOR_SCALE.indexOf(d.color) >= filters.colorRange[0] &&
+    COLOR_SCALE.indexOf(d.color) <= filters.colorRange[1] &&
 
-        // Clarity
-        (filters.clarity.length === 0 ||
-          filters.clarity.includes(d.clarity)) &&
+    // Cut range
+    CUT_SCALE.indexOf(d.cut) >= filters.cutRange[0] &&
+    CUT_SCALE.indexOf(d.cut) <= filters.cutRange[1] &&
 
-        // Quick Ship
-        (!filters.quickShip || d.quickShip) &&
+    // Clarity range
+    CLARITY_SCALE.indexOf(d.clarity) >= filters.clarityRange[0] &&
+    CLARITY_SCALE.indexOf(d.clarity) <= filters.clarityRange[1] &&
 
-        // Report (IGI / GIA)
-        (filters.report.length === 0 ||
-          filters.report.includes(d.report))
-      );
-    });
+    // L/W Ratio
+    d.lwRatio >= filters.lwRatio[0] &&
+    d.lwRatio <= filters.lwRatio[1] &&
 
-    /* ==============================
-       SORTING LOGIC
-    ===============================*/
-    if (filters.sort === "price-low") {
-      result.sort((a, b) => a.price - b.price);
-    }
+    // Table
+    d.table >= filters.table[0] &&
+    d.table <= filters.table[1] &&
 
-    if (filters.sort === "price-high") {
-      result.sort((a, b) => b.price - a.price);
-    }
+    // Depth
+    d.depth >= filters.depth[0] &&
+    d.depth <= filters.depth[1] &&
 
-    if (filters.sort === "carat-low") {
-      result.sort((a, b) => a.carat - b.carat);
-    }
+    // Polish
+    POLISH_SCALE.indexOf(d.polish) >= filters.polishRange[0] &&
+    POLISH_SCALE.indexOf(d.polish) <= filters.polishRange[1] &&
 
-    if (filters.sort === "carat-high") {
-      result.sort((a, b) => b.carat - a.carat);
-    }
+    // Fluorescence
+    FLUOR_SCALE.indexOf(d.fluor) >= filters.fluorRange[0] &&
+    FLUOR_SCALE.indexOf(d.fluor) <= filters.fluorRange[1] &&
 
-    return result;
-  }, [filters]);
+    // Symmetry
+    SYMMETRY_SCALE.indexOf(d.symmetry) >= filters.symmetryRange[0] &&
+    SYMMETRY_SCALE.indexOf(d.symmetry) <= filters.symmetryRange[1] &&
+
+    // Quick Ship
+    (!filters.quickShip || d.quickShip) &&
+
+    // Report
+    (filters.report.length === 0 ||
+      filters.report.includes(d.report))
+  );
+});
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-6">

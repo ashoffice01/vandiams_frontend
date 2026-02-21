@@ -1,55 +1,90 @@
 "use client";
 
-import { Range } from "react-range";
+import { useState } from "react";
+import { Range, getTrackBackground } from "react-range";
 
-const CARAT_MIN = 0;
-const CARAT_MAX = 20;
+/* ---------- SCALES ---------- */
 
-const PRICE_MIN = 0;
-const PRICE_MAX = 50000;
+const COLOR = ["J", "I", "H", "G", "F", "E", "D"];
+const CUT = ["Good", "Very Good", "Excellent", "Ideal"];
+const CLARITY = ["I1", "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF"];
+const POLISH = ["Fair", "Good", "Very Good", "Excellent", "Ideal"];
+const FLUOR = ["Very Strong", "Strong", "Medium", "Faint", "None"];
+const SYMMETRY = ["Good", "Very Good", "Excellent", "Ideal"];
+
+/* ---------- REUSABLE SLIDER ---------- */
+
+const Slider = ({ values, min, max, step, onChange }) => (
+  <Range
+    values={values}
+    step={step}
+    min={min}
+    max={max}
+    onChange={onChange}
+    renderTrack={({ props, children }) => {
+      const { key, ...rest } = props;
+      return (
+        <div
+          key={key}
+          {...rest}
+          className="h-[3px] w-full rounded-full"
+          style={{
+            background: getTrackBackground({
+              values,
+              colors: ["#d1d5db", "#000", "#d1d5db"],
+              min,
+              max,
+            }),
+          }}
+        >
+          {children}
+        </div>
+      );
+    }}
+    renderThumb={({ props }) => {
+      const { key, ...rest } = props;
+      return (
+        <div
+          key={key}
+          {...rest}
+          className="h-4 w-4 bg-white border-2 border-black rounded-full shadow-sm"
+        />
+      );
+    }}
+  />
+);
 
 export default function FilterSection({ filters, setFilters }) {
-  const resetFilters = () => {
-    setFilters({
-      shape: "Round",
-      carat: [2.0, 16.04],
-      price: [510, 38400],
-      color: [],
-      clarity: [],
-      cut: [],
-      quickShip: false,
-      report: [],
-      priority: "View All",
-      sort: "",
-    });
-  };
+  const [expanded, setExpanded] = useState(true);
 
   return (
-    <div className="bg-[#f3f3f3] border rounded-md p-6 text-sm">
-      {/* Reset */}
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={resetFilters}
-          className="text-xs underline text-gray-600 hover:text-black"
-        >
+    <div className="bg-[#f3f3f3] border border-gray-300 rounded-md p-8 text-[13px]">
+
+      {/* RESET */}
+      <div className="flex justify-end mb-6">
+        <button className="underline text-gray-600 hover:text-black">
           Reset Filters
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-10">
-        {/* ================= SHAPE ================= */}
+      {/* ================= ROW 1 ================= */}
+      <div className="grid grid-cols-[1fr_2fr] gap-12">
+
+        {/* SHAPE */}
         <div>
-          <p className="font-semibold mb-3 tracking-wide">SHAPE</p>
-          <div className="grid grid-cols-4 gap-3">
-            {["Round", "Oval", "Cushion", "Pear"].map((shape) => (
+          <div className="flex items-center gap-2 mb-3 font-semibold tracking-wide">
+            SHAPE <span className="text-xs bg-black text-white rounded-full w-4 h-4 flex items-center justify-center">?</span>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4">
+            {["Round", "Oval", "Cushion", "Pear", "Emerald", "Radiant", "Princess", "Marquise", "Asscher", "Heart"].map((shape) => (
               <button
                 key={shape}
                 onClick={() => setFilters({ ...filters, shape })}
-                className={`border p-3 text-xs transition ${
-                  filters.shape === shape
+                className={`border p-3 text-xs transition ${filters.shape === shape
                     ? "border-black"
                     : "border-gray-300"
-                }`}
+                  }`}
               >
                 {shape}
               </button>
@@ -57,227 +92,153 @@ export default function FilterSection({ filters, setFilters }) {
           </div>
         </div>
 
-        {/* ================= CARAT ================= */}
+
+        {/* CARAT */}
         <div>
-          <p className="font-semibold mb-3 tracking-wide">
-            CARAT SIZE
-          </p>
-
-          <div className="flex justify-between text-xs mb-2">
-            <span>{filters.carat[0].toFixed(2)}</span>
-            <span>{filters.carat[1].toFixed(2)}</span>
-          </div>
-
-          <Range
-            values={filters.carat}
-            step={0.01}
-            min={CARAT_MIN}
-            max={CARAT_MAX}
-            onChange={(values) =>
-              setFilters({ ...filters, carat: values })
-            }
-            renderTrack={({ props, children }) => {
-              const { key, ...rest } = props;
-              return (
-                <div
-                  key={key}
-                  {...rest}
-                  className="h-1 bg-gray-300 rounded relative"
-                >
-                  {children}
+          <div className="grid grid-cols-[1fr_1fr] gap-12">
+            <div>
+              <div className="flex justify-between items-center mb-2 font-semibold">
+                <span>CARAT</span>
+                <div className="flex gap-2">
+                  <input
+                    className="w-16 border text-center py-1"
+                    value={filters.carat[0]}
+                    readOnly
+                  />
+                  <span>-</span>
+                  <input
+                    className="w-16 border text-center py-1"
+                    value={filters.carat[1]}
+                    readOnly
+                  />
                 </div>
-              );
-            }}
-            renderThumb={({ props }) => {
-              const { key, ...rest } = props;
-              return (
-                <div
-                  key={key}
-                  {...rest}
-                  className="h-4 w-4 bg-black rounded-full"
-                />
-              );
-            }}
-          />
-        </div>
+              </div>
 
-        {/* ================= PRICE ================= */}
-        <div>
-          <p className="font-semibold mb-3 tracking-wide">
-            PRICE
-          </p>
+              <Slider
+                values={filters.carat}
+                min={0}
+                max={20}
+                step={0.01}
+                onChange={(v) => setFilters({ ...filters, carat: v })}
+              />
+            </div>
 
-          <div className="flex justify-between text-xs mb-2">
-            <span>${filters.price[0]}</span>
-            <span>${filters.price[1]}</span>
-          </div>
 
-          <Range
-            values={filters.price}
-            step={100}
-            min={PRICE_MIN}
-            max={PRICE_MAX}
-            onChange={(values) =>
-              setFilters({ ...filters, price: values })
-            }
-            renderTrack={({ props, children }) => {
-              const { key, ...rest } = props;
-              return (
-                <div
-                  key={key}
-                  {...rest}
-                  className="h-1 bg-gray-300 rounded relative"
-                >
-                  {children}
+            {/* PRICE */}
+            <div>
+              <div className="flex justify-between items-center mb-2 font-semibold">
+                <span>PRICE</span>
+                <div className="flex gap-2">
+                  <input
+                    className="w-20 border text-center py-1"
+                    value={`$${filters.price[0]}`}
+                    readOnly
+                  />
+                  <span>-</span>
+                  <input
+                    className="w-20 border text-center py-1"
+                    value={`$${filters.price[1]}`}
+                    readOnly
+                  />
                 </div>
-              );
-            }}
-            renderThumb={({ props }) => {
-              const { key, ...rest } = props;
-              return (
-                <div
-                  key={key}
-                  {...rest}
-                  className="h-4 w-4 bg-black rounded-full"
-                />
-              );
-            }}
-          />
+              </div>
+
+              <Slider
+                values={filters.price}
+                min={0}
+                max={50000}
+                step={100}
+                onChange={(v) => setFilters({ ...filters, price: v })}
+              />
+            </div>
+
+            {/* COLOR */}
+            <div>
+              <div className="font-semibold mb-2">COLOR</div>
+              <Slider
+                values={filters.colorRange}
+                min={0}
+                max={COLOR.length - 1}
+                step={1}
+                onChange={(v) => setFilters({ ...filters, colorRange: v })}
+              />
+              <div className="flex justify-between text-xs mt-2">
+                {COLOR.map((c) => (
+                  <span key={c}>{c}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* CUT */}
+            <div>
+              <div className="font-semibold mb-2">CUT</div>
+              <Slider
+                values={filters.cutRange}
+                min={0}
+                max={CUT.length - 1}
+                step={1}
+                onChange={(v) => setFilters({ ...filters, cutRange: v })}
+              />
+              <div className="flex justify-between text-xs mt-2">
+                {CUT.map((c) => (
+                  <span key={c}>{c}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* CLARITY */}
+            <div>
+              <div className="font-semibold mb-2">CLARITY</div>
+              <Slider
+                values={filters.clarityRange}
+                min={0}
+                max={CLARITY.length - 1}
+                step={1}
+                onChange={(v) => setFilters({ ...filters, clarityRange: v })}
+              />
+              <div className="flex justify-between text-xs mt-2">
+                {CLARITY.map((c) => (
+                  <span key={c}>{c}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        {/* ================= CUT + CLARITY + PRIORITY ================= */}
-        <div>
-          <p className="font-semibold mb-2 tracking-wide">CUT</p>
-          <div className="flex gap-2 mb-4">
-            {["Excellent", "Ideal"].map((cut) => (
-              <button
-                key={cut}
-                onClick={() =>
-                  setFilters({
-                    ...filters,
-                    cut: filters.cut.includes(cut)
-                      ? filters.cut.filter((c) => c !== cut)
-                      : [...filters.cut, cut],
-                  })
-                }
-                className={`border px-3 py-1 text-xs ${
-                  filters.cut.includes(cut)
-                    ? "bg-black text-white"
-                    : ""
-                }`}
-              >
-                {cut}
-              </button>
-            ))}
-          </div>
-
-          <p className="font-semibold mb-2 tracking-wide">
-            CLARITY
-          </p>
-          <div className="flex gap-2 mb-4 flex-wrap">
-            {["VS2", "VS1", "VVS2", "IF"].map((clarity) => (
-              <button
-                key={clarity}
-                onClick={() =>
-                  setFilters({
-                    ...filters,
-                    clarity: filters.clarity.includes(
-                      clarity
-                    )
-                      ? filters.clarity.filter(
-                          (c) => c !== clarity
-                        )
-                      : [...filters.clarity, clarity],
-                  })
-                }
-                className={`border px-2 py-1 text-xs ${
-                  filters.clarity.includes(clarity)
-                    ? "bg-black text-white"
-                    : ""
-                }`}
-              >
-                {clarity}
-              </button>
-            ))}
-          </div>
-
-          <p className="font-semibold mb-2 tracking-wide">
-            What matters to you most?
-          </p>
-          <div className="flex gap-2">
-            {["Price", "Quality", "View All"].map((item) => (
-              <button
-                key={item}
-                onClick={() =>
-                  setFilters({ ...filters, priority: item })
-                }
-                className={`border px-3 py-1 text-xs ${
-                  filters.priority === item
-                    ? "bg-black text-white"
-                    : ""
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* ================= BOTTOM BAR ================= */}
-      <div className="flex justify-between items-center mt-6 border-t pt-4 text-xs">
-        <div className="flex gap-6 items-center">
+      <div className="flex justify-between items-center border-t mt-10 pt-6">
+        <div className="flex items-center gap-6 text-sm">
           <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={filters.quickShip}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  quickShip: e.target.checked,
-                })
-              }
-            />
+            <input type="checkbox" />
             QUICK SHIP
           </label>
 
-          <span className="font-semibold">REPORT</span>
-
-          {["IGI", "GIA"].map((r) => (
-            <label key={r} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={filters.report.includes(r)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setFilters({
-                      ...filters,
-                      report: [...filters.report, r],
-                    });
-                  } else {
-                    setFilters({
-                      ...filters,
-                      report: filters.report.filter(
-                        (x) => x !== r
-                      ),
-                    });
-                  }
-                }}
-              />
-              {r}
+          <div className="flex gap-3">
+            REPORT
+            <label className="flex items-center gap-1">
+              <input type="checkbox" /> IGI
             </label>
-          ))}
+            <label className="flex items-center gap-1">
+              <input type="checkbox" /> GIA
+            </label>
+          </div>
         </div>
 
-        <div className="flex gap-3">
-          <button className="border px-4 py-1">
+        <div className="flex gap-4">
+          <button className="border px-5 py-2">
             Compare Diamonds (0)
           </button>
-          <button className="border px-4 py-1">
+          <button className="border px-5 py-2">
             Take A Quiz
           </button>
-          <button className="border px-4 py-1">
-            MORE FILTERS
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="border px-5 py-2"
+          >
+            {expanded ? "MORE FILTERS" : "LESS FILTERS"}
           </button>
         </div>
       </div>
