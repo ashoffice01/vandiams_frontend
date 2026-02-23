@@ -1,130 +1,227 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { diamonds as diamondsData } from "../data/diamonds";
+import { useState, useEffect, useMemo } from "react";
 import FilterSection from "../components/FilterSection";
 import DiamondCard from "../components/DiamondCard";
 
+/* ==============================
+   HELPERS
+==============================*/
+
+function capitalize(str = "") {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function capitalizeWords(str = "") {
+  return str
+    .split(" ")
+    .map((word) => capitalize(word))
+    .join(" ");
+}
+
 export default function Page() {
-const [filters, setFilters] = useState({
-  shape: "Round",
+  const [diamondsData, setDiamondsData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  carat: [0, 20],
-  price: [0, 50000],
+  const ITEMS_PER_PAGE = 10;
+  const [itemsToShow, setItemsToShow] = useState(ITEMS_PER_PAGE);
 
-  colorRange: [0, 6],
-  clarityRange: [0, 7],
-  cutRange: [0, 3],
+  const [filters, setFilters] = useState({
+    shape: "All",
+    carat: [0, 20],
+    price: [0, 50000],
+    colorRange: [0, 6],
+    clarityRange: [0, 7],
+    cutRange: [0, 3],
+    lwRatio: [0, 3],
+    table: [0, 100],
+    depth: [0, 100],
+    polishRange: [0, 4],
+    fluorRange: [0, 4],
+    symmetryRange: [0, 3],
+    quickShip: false,
+    report: [],
+    sort: "",
+    priority: "view-all",
+    search: "",
+    searchInput: "",
+  });
 
-  lwRatio: [0.5, 3],
-  table: [0, 100],
-  depth: [0, 100],
+  /* ==============================
+     FETCH DIAMONDS FROM WORDPRESS
+  ===============================*/
+  useEffect(() => {
+    async function fetchDiamonds() {
+      try {
+        const res = await fetch(
+          "https://vandiams.com/cms/wp-json/wp/v2/diamond"
+        );
 
-  polishRange: [0, 4],
-  fluorRange: [0, 4],
-  symmetryRange: [0, 3],
+        const data = await res.json();
 
-  quickShip: false,
-  report: [],
-});
+        const formatted = data.map((item) => ({
+          id: item.id,
+
+          shape: item.acf?.shape?.[0]
+            ? capitalize(item.acf.shape[0])
+            : "",
+
+          color: item.acf?.color?.[0]
+            ? item.acf.color[0].toUpperCase()
+            : "",
+
+          clarity: item.acf?.clarity?.[0]
+            ? item.acf.clarity[0].toUpperCase()
+            : "",
+
+          cut: item.acf?.cut?.[0]
+            ? capitalizeWords(item.acf.cut[0])
+            : "",
+
+          report: item.acf?.report?.[0]
+            ? item.acf.report[0].toUpperCase()
+            : "",
+
+          carat: Number(item.acf?.carat) || 0,
+          price: Number(item.acf?.price) || 0,
+
+          lwRatio: Number(item.acf?.lwratio) || 0,
+          table: Number(item.acf?.table) || 0,
+          depth: Number(item.acf?.depth) || 0,
+
+          polish: item.acf?.polish
+            ? capitalizeWords(item.acf.polish)
+            : "",
+
+          fluor: item.acf?.fluor
+            ? capitalizeWords(item.acf.fluor)
+            : "",
+
+          symmetry: item.acf?.symmetry
+            ? capitalizeWords(item.acf.symmetry)
+            : "",
+
+          quickShip: Boolean(item.acf?.quickship),
+        }));
+
+        setDiamondsData(formatted);
+      } catch (error) {
+        console.error("Diamond fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDiamonds();
+  }, []);
+
+  useEffect(() => {
+  setItemsToShow(ITEMS_PER_PAGE);
+}, [filters]);
 
   /* ==============================
      FILTERING LOGIC
   ===============================*/
-const COLOR_SCALE = ["J", "I", "H", "G", "F", "E", "D"];
-const CLARITY_SCALE = [
-  "I1",
-  "SI2",
-  "SI1",
-  "VS2",
-  "VS1",
-  "VVS2",
-  "VVS1",
-  "IF",
-];
-const CUT_SCALE = ["Good", "Very Good", "Excellent", "Ideal"];
-const POLISH_SCALE = ["Fair", "Good", "Very Good", "Excellent", "Ideal"];
-const FLUOR_SCALE = ["Very Strong", "Strong", "Medium", "Faint", "None"];
-const SYMMETRY_SCALE = ["Good", "Very Good", "Excellent", "Ideal"];
-const filteredDiamonds = diamondsData.filter((d) => {
-  return (
-    // Shape
-    d.shape === filters.shape &&
 
-    // Carat
-    d.carat >= filters.carat[0] &&
-    d.carat <= filters.carat[1] &&
+  const COLOR_SCALE = ["J", "I", "H", "G", "F", "E", "D"];
+  const CLARITY_SCALE = [
+    "I1",
+    "SI2",
+    "SI1",
+    "VS2",
+    "VS1",
+    "VVS2",
+    "VVS1",
+    "IF",
+  ];
+  const CUT_SCALE = ["Good", "Very Good", "Excellent", "Ideal"];
+  const POLISH_SCALE = ["Fair", "Good", "Very Good", "Excellent", "Ideal"];
+  const FLUOR_SCALE = ["Very Strong", "Strong", "Medium", "Faint", "None"];
+  const SYMMETRY_SCALE = ["Good", "Very Good", "Excellent", "Ideal"];
+const filteredDiamonds = useMemo(() => {
+  let result = diamondsData.filter((d) => {
+    return (
+      (filters.shape === "All" || d.shape === filters.shape) &&
+      d.carat >= filters.carat[0] &&
+      d.carat <= filters.carat[1] &&
+      d.price >= filters.price[0] &&
+      d.price <= filters.price[1] &&
+      (d.color === "" ||
+        (COLOR_SCALE.indexOf(d.color) >= filters.colorRange[0] &&
+          COLOR_SCALE.indexOf(d.color) <= filters.colorRange[1])) &&
+      (d.cut === "" ||
+        (CUT_SCALE.indexOf(d.cut) >= filters.cutRange[0] &&
+          CUT_SCALE.indexOf(d.cut) <= filters.cutRange[1])) &&
+      (d.clarity === "" ||
+        (CLARITY_SCALE.indexOf(d.clarity) >= filters.clarityRange[0] &&
+          CLARITY_SCALE.indexOf(d.clarity) <= filters.clarityRange[1])) &&
+      d.lwRatio >= filters.lwRatio[0] &&
+      d.lwRatio <= filters.lwRatio[1] &&
+      d.table >= filters.table[0] &&
+      d.table <= filters.table[1] &&
+      d.depth >= filters.depth[0] &&
+      d.depth <= filters.depth[1] &&
+      (!filters.quickShip || d.quickShip) &&
+      (filters.report.length === 0 ||
+        filters.report.includes(d.report))
+    );
+  });
 
-    // Price
-    d.price >= filters.price[0] &&
-    d.price <= filters.price[1] &&
+  // SEARCH
+  if (filters.search) {
+    const search = filters.search.toLowerCase();
+    result = result.filter((d) =>
+      Object.values(d).some((val) =>
+        String(val).toLowerCase().includes(search)
+      )
+    );
+  }
 
-    // Color range
-    COLOR_SCALE.indexOf(d.color) >= filters.colorRange[0] &&
-    COLOR_SCALE.indexOf(d.color) <= filters.colorRange[1] &&
+  // SORT
+  if (filters.sort === "price-low")
+    result.sort((a, b) => a.price - b.price);
 
-    // Cut range
-    CUT_SCALE.indexOf(d.cut) >= filters.cutRange[0] &&
-    CUT_SCALE.indexOf(d.cut) <= filters.cutRange[1] &&
+  if (filters.sort === "price-high")
+    result.sort((a, b) => b.price - a.price);
 
-    // Clarity range
-    CLARITY_SCALE.indexOf(d.clarity) >= filters.clarityRange[0] &&
-    CLARITY_SCALE.indexOf(d.clarity) <= filters.clarityRange[1] &&
+  if (filters.sort === "carat-low")
+    result.sort((a, b) => a.carat - b.carat);
 
-    // L/W Ratio
-    d.lwRatio >= filters.lwRatio[0] &&
-    d.lwRatio <= filters.lwRatio[1] &&
+  if (filters.sort === "carat-high")
+    result.sort((a, b) => b.carat - a.carat);
 
-    // Table
-    d.table >= filters.table[0] &&
-    d.table <= filters.table[1] &&
+  return result;
+}, [diamondsData, filters]);
 
-    // Depth
-    d.depth >= filters.depth[0] &&
-    d.depth <= filters.depth[1] &&
+const visibleDiamonds = filteredDiamonds.slice(0, itemsToShow);
 
-    // Polish
-    POLISH_SCALE.indexOf(d.polish) >= filters.polishRange[0] &&
-    POLISH_SCALE.indexOf(d.polish) <= filters.polishRange[1] &&
+  const [view, setView] = useState("grid"); // grid | list
 
-    // Fluorescence
-    FLUOR_SCALE.indexOf(d.fluor) >= filters.fluorRange[0] &&
-    FLUOR_SCALE.indexOf(d.fluor) <= filters.fluorRange[1] &&
+  if (loading) {
+    return (
+      <main className="max-w-7xl mx-auto px-6 py-6">
+        <p className="text-center">Loading diamonds...</p>
+      </main>
+    );
+  }
 
-    // Symmetry
-    SYMMETRY_SCALE.indexOf(d.symmetry) >= filters.symmetryRange[0] &&
-    SYMMETRY_SCALE.indexOf(d.symmetry) <= filters.symmetryRange[1] &&
-
-    // Quick Ship
-    (!filters.quickShip || d.quickShip) &&
-
-    // Report
-    (filters.report.length === 0 ||
-      filters.report.includes(d.report))
-  );
-});
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-6">
-
-      {/* Breadcrumb */}
       <div className="text-xs text-gray-500 mb-4">
         Home | Search Lab Grown Diamonds
       </div>
 
-      {/* Page Title */}
       <h1 className="text-3xl font-semibold text-center mb-6">
         Search Lab Grown Diamonds
       </h1>
 
-      {/* FILTER SECTION */}
-      <FilterSection
-        filters={filters}
-        setFilters={setFilters}
-      />
+      <FilterSection filters={filters} setFilters={setFilters} />
 
-      {/* Results Header */}
-      <div className="flex justify-between items-center mt-6 mb-4">
+      {/* ================= TOP BAR ================= */}
+      <div className="flex justify-between items-center mt-8 mb-6">
+
+        {/* COUNT */}
         <p className="text-sm font-medium">
           DIAMONDS AVAILABLE:{" "}
           <span className="font-semibold">
@@ -132,62 +229,138 @@ const filteredDiamonds = diamondsData.filter((d) => {
           </span>
         </p>
 
-        <div className="flex items-center gap-4">
+        {/* SORT */}
+        <div className="flex items-center gap-6">
 
-          {/* Visual / List Toggle (UI only) */}
-          <div className="flex border rounded overflow-hidden text-xs">
-            <button className="px-4 py-2 bg-black text-white">
-              Visual
+          {/* VIEW TOGGLE */}
+          <div className="flex border">
+            <button
+              onClick={() => setView("grid")}
+              className={`px-4 py-2 text-sm ${view === "grid"
+                ? "bg-black text-white"
+                : "bg-white"
+                }`}
+            >
+              Grid
             </button>
-            <button className="px-4 py-2 bg-white">
+
+            <button
+              onClick={() => setView("list")}
+              className={`px-4 py-2 text-sm ${view === "list"
+                ? "bg-black text-white"
+                : "bg-white"
+                }`}
+            >
               List
             </button>
           </div>
 
-          {/* Sorting */}
           <select
-            className="border px-3 py-2 text-xs"
             value={filters.sort}
             onChange={(e) =>
-              setFilters({
-                ...filters,
-                sort: e.target.value,
-              })
+              setFilters({ ...filters, sort: e.target.value })
             }
+            className="border px-3 py-2 text-sm"
           >
-            <option value="">Sort: Quick Ship</option>
-            <option value="price-low">
-              Price: Low to High
-            </option>
-            <option value="price-high">
-              Price: High to Low
-            </option>
-            <option value="carat-low">
-              Carat: Low to High
-            </option>
-            <option value="carat-high">
-              Carat: High to Low
-            </option>
+            <option value="">Sort By</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="carat-low">Carat: Low to High</option>
+            <option value="carat-high">Carat: High to Low</option>
           </select>
+
         </div>
       </div>
 
-      {/* Diamond Grid */}
-      <div className="grid grid-cols-4 gap-6">
-        {filteredDiamonds.map((diamond) => (
-          <DiamondCard
-            key={diamond.id}
-            {...diamond}
-          />
-        ))}
-      </div>
+      {/* ================= PRODUCTS ================= */}
 
-      {/* Load More Button (UI only for now) */}
-      <div className="flex justify-center mt-8">
-        <button className="border px-6 py-2 text-xs hover:bg-black hover:text-white transition">
-          LOAD MORE
-        </button>
-      </div>
+      {view === "grid" ? (
+        <div className="grid grid-cols-4 gap-6">
+          {visibleDiamonds.map((diamond) => (
+            <DiamondCard key={diamond.id} {...diamond} />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4">
+
+          {/* HEADER */}
+          <div className="grid grid-cols-[80px_repeat(10,1fr)_80px_80px_110px] text-xs uppercase text-gray-600 border-b pb-3">
+            <div></div>
+            <div>Shape</div>
+            <div>Carat</div>
+            <div>Color</div>
+            <div>Clarity</div>
+            <div>Cut</div>
+            <div>Cert.</div>
+            <div>Polish</div>
+            <div>Symmetry</div>
+            <div>Depth</div>
+            <div>Price</div>
+            <div>Compare</div>
+            <div>Wishlist</div>
+            <div></div>
+          </div>
+
+          {/* ROWS */}
+          {visibleDiamonds.map((diamond) => (
+            <div
+              key={diamond.id}
+              className="grid grid-cols-[80px_repeat(10,1fr)_80px_80px_110px] items-center border-b py-6 text-sm"
+            >
+
+              {/* 360 ICON */}
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 border rounded-full flex items-center justify-center text-xs">
+                  360°
+                </div>
+              </div>
+
+              <div>{diamond.shape}</div>
+              <div>{diamond.carat} ct</div>
+              <div>{diamond.color}</div>
+              <div>{diamond.clarity}</div>
+              <div>{diamond.cut}</div>
+              <div>{diamond.report}</div>
+              <div>{diamond.polish}</div>
+              <div>{diamond.symmetry}</div>
+              <div>{diamond.depth}%</div>
+
+              <div className="font-semibold">
+                ${diamond.price.toLocaleString()}
+              </div>
+
+              {/* Compare */}
+              <div>
+                <input type="checkbox" />
+              </div>
+
+              {/* Wishlist */}
+              <div className="text-xl cursor-pointer">♡</div>
+
+              {/* Details */}
+              <div>
+                <button className="bg-black text-white px-4 py-2 text-xs">
+                  DETAILS
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {itemsToShow < filteredDiamonds.length && (
+  <div className="flex justify-center mt-10">
+    <button
+      onClick={() =>
+        setItemsToShow((prev) => prev + ITEMS_PER_PAGE)
+      }
+      className="border px-8 py-3 text-sm hover:bg-black hover:text-white transition"
+    >
+      Load More
+    </button>
+  </div>
+)}
+
     </main>
   );
 }
