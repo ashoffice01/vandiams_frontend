@@ -8,7 +8,7 @@ import CTASection from "./components/CTASection";
 import PressMarquee from "./components/PressMarquee";
 import HowItWorksPage from "./how-it-works/page";
 import CelebrityFeature from "./components/CelebrityFeature";
-import ComplimentaryGift from "./components/ComplimentaryGift";
+// import ComplimentaryGift from "./components/ComplimentaryGift";
 import LabGrownDiamonds from "./components/LabGrownDiamonds";
 import GiftGuide from "./components/GiftGuide";
 import ShopByStyle from "./components/ShopByStyle";
@@ -20,7 +20,8 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <ComplimentaryGift />
+      {/* <ComplimentaryGift /> */}
+      <br/><br/><br/>
       <ParallaxSection />
       <LabGrownDiamonds />
       <GiftGuide />

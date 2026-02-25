@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import FilterSection from "../components/FilterSection";
 import DiamondCard from "../components/DiamondCard";
-
+import Link from "next/link";
 /* ==============================
    HELPERS
 ==============================*/
@@ -276,9 +276,11 @@ const visibleDiamonds = filteredDiamonds.slice(0, itemsToShow);
 
       {view === "grid" ? (
         <div className="grid grid-cols-4 gap-6">
-          {visibleDiamonds.map((diamond) => (
-            <DiamondCard key={diamond.id} {...diamond} />
-          ))}
+         {visibleDiamonds.map((diamond) => (
+  <Link key={diamond.id} href={`/diamonds/${diamond.id}`}>
+    <DiamondCard {...diamond} />
+  </Link>
+))}
         </div>
       ) : (
         <div className="mt-4">
@@ -339,9 +341,11 @@ const visibleDiamonds = filteredDiamonds.slice(0, itemsToShow);
 
               {/* Details */}
               <div>
-                <button className="bg-black text-white px-4 py-2 text-xs">
-                  DETAILS
-                </button>
+               <Link href={`/diamonds/${diamond.id}`}>
+  <button className="bg-black text-white px-4 py-2 text-xs hover:opacity-80 transition">
+    DETAILS
+  </button>
+</Link>
               </div>
             </div>
           ))}
