@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Shapes } from "lucide-react";
 import ProductCard from "../components/ProductCard";
@@ -17,21 +17,46 @@ export default function RingsPage() {
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [caratRange, setCaratRange] = useState([0, 3]);
 
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   /* =============================
-     PRODUCT DATA (20 PRODUCTS)
+     FETCH PRODUCTS FROM WORDPRESS
   ============================== */
 
-  const products = Array.from({ length: 20 }).map((_, i) => ({
-    id: i + 1,
-    name: `Luxury Ring ${i + 1}`,
-    price: 300 + i * 150,
-    metal: ["Platinum", "Yellow Gold", "Rose Gold", "White Gold", "Sterling Silver"][i % 5],
-    stone: ["Diamond", "Gemstone","Color Diamond", "No Stone", "Pearl"][i % 5],
-    shape: ["Round", "Oval", "Cushion", "Emerald", "Pear", "Heart", "Radiant", "Princes", "Marquise", "Asscher", "Multi-Shape", "Trillion", "Baguette","Flower","Hexagon"][i % 15],
-    carat: (0.5 + (i % 5) * 0.5),
-    stock: i % 4 !== 0,
-    image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e",
-  }));
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch(
+          "https://vandiams.com/cms/wp-json/wp/v2/product?_embed"
+        );
+
+        const data = await res.json();
+
+        const formattedProducts = data.map((item) => ({
+          id: item.id,
+          name: item.title?.rendered || "Product",
+          price: item.acf?.price || 0,
+          metal: item.acf?.metal || "",
+          stone: item.acf?.stone || "",
+          shape: item.acf?.shape || "",
+          carat: item.acf?.carat || 0,
+          stock: item.acf?.stock ?? true,
+          image:
+            item._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
+            "/placeholder.jpg",
+        }));
+
+        setProducts(formattedProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProducts();
+  }, []);
 
   /* =============================
      FILTER + SORT LOGIC
@@ -245,7 +270,7 @@ export default function RingsPage() {
                 ))}
               </div>
 
-              {/* Price */}
+              {/* Price & Carat */}
               <div>
                 <h3 className="mb-4 font-medium">Price</h3>
                 <input
@@ -304,9 +329,15 @@ export default function RingsPage() {
         px-4 sm:px-6 md:px-12 
         py-10 md:py-16">
 
-        {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+        {loading ? (
+          <div className="col-span-full text-center py-20">
+            Loading products...
+          </div>
+        ) : (
+          filteredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))
+        )}
 
       </div>
     </main>

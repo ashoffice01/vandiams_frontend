@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import Image from "next/image";
-import { Circle, Square, Diamond, Gem } from "lucide-react";
+import { useState } from "react";
 
 export default function ProductCard({ product }) {
   const [selectedMetal, setSelectedMetal] = useState(product.metal);
@@ -11,56 +9,10 @@ export default function ProductCard({ product }) {
   const [hovered, setHovered] = useState(false);
 
   /* =============================
-     IMAGE VARIATIONS
+     IMAGE (FROM WORDPRESS API)
   ============================== */
 
-  const imageMap = useMemo(() => {
-    return {
-      default:
-        "https://images.unsplash.com/photo-1605100804763-247f67b3557e",
-
-      lifestyle:
-        "https://images.unsplash.com/photo-1617038220319-276d3cfab638",
-
-      metals: {
-        Platinum:
-          "https://images.unsplash.com/photo-1588449668365-d15e397f6787",
-        "Yellow Gold":
-          "https://images.unsplash.com/photo-1611599537845-1c7aca0091c0",
-        "Rose Gold":
-          "https://images.unsplash.com/photo-1617038260897-41a1f14a0f59",
-        "White Gold":
-          "https://images.unsplash.com/photo-1588444650700-6c41b8b2b2e9",
-        "Sterling Silver":
-          "https://images.unsplash.com/photo-1588449668365-d15e397f6787",
-      },
-
-      shapes: {
-        Round:
-          "https://images.unsplash.com/photo-1588444650700-6c41b8b2b2e9",
-        Oval:
-          "https://images.unsplash.com/photo-1611599537845-1c7aca0091c0",
-        Cushion:
-          "https://images.unsplash.com/photo-1617038260897-41a1f14a0f59",
-      },
-    };
-  }, []);
-
-  /* =============================
-     CURRENT DISPLAY IMAGE
-  ============================== */
-
-  const currentImage = useMemo(() => {
-    if (hovered) return imageMap.lifestyle;
-
-    if (imageMap.metals[selectedMetal])
-      return imageMap.metals[selectedMetal];
-
-    if (imageMap.shapes[selectedShape])
-      return imageMap.shapes[selectedShape];
-
-    return imageMap.default;
-  }, [hovered, selectedMetal, selectedShape, imageMap]);
+  const currentImage = product.image;
 
   const shapes = ["Round", "Oval", "Cushion"];
 
@@ -88,14 +40,10 @@ export default function ProductCard({ product }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <Image
-          src={currentImage}
+        <img
+          src={currentImage || "/placeholder.jpg"}
           alt={product.name}
-          fill
-          sizes="(max-width: 640px) 50vw,
-                 (max-width: 1024px) 33vw,
-                 25vw"
-          className="object-contain transition-opacity duration-500"
+          className="w-full h-full object-contain transition-opacity duration-500"
         />
       </div>
 

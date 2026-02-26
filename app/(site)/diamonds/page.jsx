@@ -116,8 +116,8 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-  setItemsToShow(ITEMS_PER_PAGE);
-}, [filters]);
+    setItemsToShow(ITEMS_PER_PAGE);
+  }, [filters]);
 
   /* ==============================
      FILTERING LOGIC
@@ -138,62 +138,62 @@ export default function Page() {
   const POLISH_SCALE = ["Fair", "Good", "Very Good", "Excellent", "Ideal"];
   const FLUOR_SCALE = ["Very Strong", "Strong", "Medium", "Faint", "None"];
   const SYMMETRY_SCALE = ["Good", "Very Good", "Excellent", "Ideal"];
-const filteredDiamonds = useMemo(() => {
-  let result = diamondsData.filter((d) => {
-    return (
-      (filters.shape === "All" || d.shape === filters.shape) &&
-      d.carat >= filters.carat[0] &&
-      d.carat <= filters.carat[1] &&
-      d.price >= filters.price[0] &&
-      d.price <= filters.price[1] &&
-      (d.color === "" ||
-        (COLOR_SCALE.indexOf(d.color) >= filters.colorRange[0] &&
-          COLOR_SCALE.indexOf(d.color) <= filters.colorRange[1])) &&
-      (d.cut === "" ||
-        (CUT_SCALE.indexOf(d.cut) >= filters.cutRange[0] &&
-          CUT_SCALE.indexOf(d.cut) <= filters.cutRange[1])) &&
-      (d.clarity === "" ||
-        (CLARITY_SCALE.indexOf(d.clarity) >= filters.clarityRange[0] &&
-          CLARITY_SCALE.indexOf(d.clarity) <= filters.clarityRange[1])) &&
-      d.lwRatio >= filters.lwRatio[0] &&
-      d.lwRatio <= filters.lwRatio[1] &&
-      d.table >= filters.table[0] &&
-      d.table <= filters.table[1] &&
-      d.depth >= filters.depth[0] &&
-      d.depth <= filters.depth[1] &&
-      (!filters.quickShip || d.quickShip) &&
-      (filters.report.length === 0 ||
-        filters.report.includes(d.report))
-    );
-  });
+  const filteredDiamonds = useMemo(() => {
+    let result = diamondsData.filter((d) => {
+      return (
+        (filters.shape === "All" || d.shape === filters.shape) &&
+        d.carat >= filters.carat[0] &&
+        d.carat <= filters.carat[1] &&
+        d.price >= filters.price[0] &&
+        d.price <= filters.price[1] &&
+        (d.color === "" ||
+          (COLOR_SCALE.indexOf(d.color) >= filters.colorRange[0] &&
+            COLOR_SCALE.indexOf(d.color) <= filters.colorRange[1])) &&
+        (d.cut === "" ||
+          (CUT_SCALE.indexOf(d.cut) >= filters.cutRange[0] &&
+            CUT_SCALE.indexOf(d.cut) <= filters.cutRange[1])) &&
+        (d.clarity === "" ||
+          (CLARITY_SCALE.indexOf(d.clarity) >= filters.clarityRange[0] &&
+            CLARITY_SCALE.indexOf(d.clarity) <= filters.clarityRange[1])) &&
+        d.lwRatio >= filters.lwRatio[0] &&
+        d.lwRatio <= filters.lwRatio[1] &&
+        d.table >= filters.table[0] &&
+        d.table <= filters.table[1] &&
+        d.depth >= filters.depth[0] &&
+        d.depth <= filters.depth[1] &&
+        (!filters.quickShip || d.quickShip) &&
+        (filters.report.length === 0 ||
+          filters.report.includes(d.report))
+      );
+    });
 
-  // SEARCH
-  if (filters.search) {
-    const search = filters.search.toLowerCase();
-    result = result.filter((d) =>
-      Object.values(d).some((val) =>
-        String(val).toLowerCase().includes(search)
-      )
-    );
-  }
+    // SEARCH
+    if (filters.search) {
+      const search = filters.search.toLowerCase();
+      result = result.filter((d) =>
+        Object.values(d).some((val) =>
+          String(val).toLowerCase().includes(search)
+        )
+      );
+    }
 
-  // SORT
-  if (filters.sort === "price-low")
-    result.sort((a, b) => a.price - b.price);
+    // SORT
+    if (filters.sort === "price-low")
+      result.sort((a, b) => a.price - b.price);
 
-  if (filters.sort === "price-high")
-    result.sort((a, b) => b.price - a.price);
+    if (filters.sort === "price-high")
+      result.sort((a, b) => b.price - a.price);
 
-  if (filters.sort === "carat-low")
-    result.sort((a, b) => a.carat - b.carat);
+    if (filters.sort === "carat-low")
+      result.sort((a, b) => a.carat - b.carat);
 
-  if (filters.sort === "carat-high")
-    result.sort((a, b) => b.carat - a.carat);
+    if (filters.sort === "carat-high")
+      result.sort((a, b) => b.carat - a.carat);
 
-  return result;
-}, [diamondsData, filters]);
+    return result;
+  }, [diamondsData, filters]);
 
-const visibleDiamonds = filteredDiamonds.slice(0, itemsToShow);
+  const visibleDiamonds = filteredDiamonds.slice(0, itemsToShow);
 
   const [view, setView] = useState("grid"); // grid | list
 
@@ -276,11 +276,11 @@ const visibleDiamonds = filteredDiamonds.slice(0, itemsToShow);
 
       {view === "grid" ? (
         <div className="grid grid-cols-4 gap-6">
-         {visibleDiamonds.map((diamond) => (
-  <Link key={diamond.id} href={`/diamonds/${diamond.id}`}>
-    <DiamondCard {...diamond} />
-  </Link>
-))}
+          {visibleDiamonds.map((diamond) => (
+            <Link key={diamond.id} href={`/diamonds/detail?id=${diamond.id}`}>
+              <DiamondCard {...diamond} />
+            </Link>
+          ))}
         </div>
       ) : (
         <div className="mt-4">
@@ -341,11 +341,11 @@ const visibleDiamonds = filteredDiamonds.slice(0, itemsToShow);
 
               {/* Details */}
               <div>
-               <Link href={`/diamonds/${diamond.id}`}>
-  <button className="bg-black text-white px-4 py-2 text-xs hover:opacity-80 transition">
-    DETAILS
-  </button>
-</Link>
+                <Link href={`/diamonds/detail?id=${diamond.id}`}>
+                  <button className="bg-black text-white px-4 py-2 text-xs hover:opacity-80 transition">
+                    DETAILS
+                  </button>
+                </Link>
               </div>
             </div>
           ))}
@@ -353,17 +353,17 @@ const visibleDiamonds = filteredDiamonds.slice(0, itemsToShow);
       )}
 
       {itemsToShow < filteredDiamonds.length && (
-  <div className="flex justify-center mt-10">
-    <button
-      onClick={() =>
-        setItemsToShow((prev) => prev + ITEMS_PER_PAGE)
-      }
-      className="border px-8 py-3 text-sm hover:bg-black hover:text-white transition"
-    >
-      Load More
-    </button>
-  </div>
-)}
+        <div className="flex justify-center mt-10">
+          <button
+            onClick={() =>
+              setItemsToShow((prev) => prev + ITEMS_PER_PAGE)
+            }
+            className="border px-8 py-3 text-sm hover:bg-black hover:text-white transition"
+          >
+            Load More
+          </button>
+        </div>
+      )}
 
     </main>
   );
