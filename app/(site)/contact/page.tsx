@@ -5,29 +5,37 @@ import { useState } from "react";
 export default function ContactPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setStatus("loading");
+async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
+  const form = e.currentTarget; // ✅ store reference immediately
+  const formData = new FormData(form);
 
-    const res = await fetch("/api/contact", {
+  setStatus("loading");
+
+  const res = await fetch(
+    "https://vandiams.com/cms/wp-json/custom/v1/contact",
+    {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         name: formData.get("name"),
         email: formData.get("email"),
         subject: formData.get("subject"),
         message: formData.get("message"),
       }),
-    });
-
-    if (res.ok) {
-      setStatus("success");
-      e.currentTarget.reset();
-    } else {
-      setStatus("error");
     }
+  );
+
+  if (res.ok) {
+    setStatus("success");
+    form.reset(); // ✅ use stored reference
+  } else {
+    setStatus("error");
   }
+}
 
   return (
     <section className="bg-neutral-50 py-32">
@@ -48,6 +56,7 @@ export default function ContactPage() {
             className="md:col-span-2 space-y-6 bg-white p-10 border border-black/10"
           >
             <div className="grid md:grid-cols-2 gap-6">
+            <input type="text" name="company" style={{ display: "none" }} />
               <input
                 name="name"
                 required
