@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import FilterSection from "../components/FilterSection";
 import DiamondCard from "../components/DiamondCard";
 import Link from "next/link";
+
 /* ==============================
    HELPERS
 ==============================*/
@@ -23,7 +24,7 @@ export default function Page() {
   const [diamondsData, setDiamondsData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 8;
   const [itemsToShow, setItemsToShow] = useState(ITEMS_PER_PAGE);
 
   const [filters, setFilters] = useState({
@@ -48,59 +49,50 @@ export default function Page() {
   });
 
   /* ==============================
-     FETCH DIAMONDS FROM WORDPRESS
+     FETCH DIAMONDS
   ===============================*/
   useEffect(() => {
     async function fetchDiamonds() {
       try {
         const res = await fetch(
-          "https://vandiams.com/cms/wp-json/wp/v2/diamond"
+          "https://vandiams.com/cms/wp-json/wp/v2/diamond?_embed&per_page=100"
         );
 
         const data = await res.json();
 
         const formatted = data.map((item) => ({
           id: item.id,
-
+          image:
+            item._embedded?.["wp:featuredmedia"]?.[0]?.source_url || "",
           shape: item.acf?.shape?.[0]
             ? capitalize(item.acf.shape[0])
             : "",
-
           color: item.acf?.color?.[0]
             ? item.acf.color[0].toUpperCase()
             : "",
-
           clarity: item.acf?.clarity?.[0]
             ? item.acf.clarity[0].toUpperCase()
             : "",
-
           cut: item.acf?.cut?.[0]
             ? capitalizeWords(item.acf.cut[0])
             : "",
-
           report: item.acf?.report?.[0]
             ? item.acf.report[0].toUpperCase()
             : "",
-
           carat: Number(item.acf?.carat) || 0,
           price: Number(item.acf?.price) || 0,
-
           lwRatio: Number(item.acf?.lwratio) || 0,
           table: Number(item.acf?.table) || 0,
           depth: Number(item.acf?.depth) || 0,
-
           polish: item.acf?.polish
             ? capitalizeWords(item.acf.polish)
             : "",
-
           fluor: item.acf?.fluor
             ? capitalizeWords(item.acf.fluor)
             : "",
-
           symmetry: item.acf?.symmetry
             ? capitalizeWords(item.acf.symmetry)
             : "",
-
           quickShip: Boolean(item.acf?.quickship),
         }));
 
@@ -125,19 +117,13 @@ export default function Page() {
 
   const COLOR_SCALE = ["J", "I", "H", "G", "F", "E", "D"];
   const CLARITY_SCALE = [
-    "I1",
-    "SI2",
-    "SI1",
-    "VS2",
-    "VS1",
-    "VVS2",
-    "VVS1",
-    "IF",
+    "I1","SI2","SI1","VS2","VS1","VVS2","VVS1","IF",
   ];
   const CUT_SCALE = ["Good", "Very Good", "Excellent", "Ideal"];
   const POLISH_SCALE = ["Fair", "Good", "Very Good", "Excellent", "Ideal"];
   const FLUOR_SCALE = ["Very Strong", "Strong", "Medium", "Faint", "None"];
   const SYMMETRY_SCALE = ["Good", "Very Good", "Excellent", "Ideal"];
+
   const filteredDiamonds = useMemo(() => {
     let result = diamondsData.filter((d) => {
       return (
@@ -194,17 +180,45 @@ export default function Page() {
   }, [diamondsData, filters]);
 
   const visibleDiamonds = filteredDiamonds.slice(0, itemsToShow);
+  const [view, setView] = useState("grid");
 
-  const [view, setView] = useState("grid"); // grid | list
+  /* ==============================
+     SKELETON LOADER
+  ===============================*/
 
   if (loading) {
     return (
-      <main className="max-w-7xl mx-auto px-6 py-6">
-        <p className="text-center">Loading diamonds...</p>
+      <main className="max-w-7xl mx-auto px-6 py-6 animate-pulse">
+        <div className="text-xs text-gray-300 mb-4">
+          Home | Search Lab Grown Diamonds
+        </div>
+
+        <div className="h-8 bg-gray-200 w-1/3 mx-auto mb-6 rounded"></div>
+
+        <div className="h-32 bg-gray-200 rounded mb-10"></div>
+
+        <div className="flex justify-between items-center mb-6">
+          <div className="h-4 bg-gray-200 w-40 rounded"></div>
+          <div className="h-8 bg-gray-200 w-48 rounded"></div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="border rounded-xl p-4 space-y-4">
+              <div className="bg-gray-200 aspect-square rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+            </div>
+          ))}
+        </div>
       </main>
     );
   }
 
+  /* ==============================
+     ORIGINAL CONTENT (UNCHANGED)
+  ===============================*/
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-6">
@@ -218,10 +232,7 @@ export default function Page() {
 
       <FilterSection filters={filters} setFilters={setFilters} />
 
-      {/* ================= TOP BAR ================= */}
       <div className="flex justify-between items-center mt-8 mb-6">
-
-        {/* COUNT */}
         <p className="text-sm font-medium">
           DIAMONDS AVAILABLE:{" "}
           <span className="font-semibold">
@@ -229,27 +240,22 @@ export default function Page() {
           </span>
         </p>
 
-        {/* SORT */}
         <div className="flex items-center gap-6">
-
-          {/* VIEW TOGGLE */}
           <div className="flex border">
             <button
               onClick={() => setView("grid")}
-              className={`px-4 py-2 text-sm ${view === "grid"
-                ? "bg-black text-white"
-                : "bg-white"
-                }`}
+              className={`px-4 py-2 text-sm ${
+                view === "grid" ? "bg-black text-white" : "bg-white"
+              }`}
             >
               Grid
             </button>
 
             <button
               onClick={() => setView("list")}
-              className={`px-4 py-2 text-sm ${view === "list"
-                ? "bg-black text-white"
-                : "bg-white"
-                }`}
+              className={`px-4 py-2 text-sm ${
+                view === "list" ? "bg-black text-white" : "bg-white"
+              }`}
             >
               List
             </button>
@@ -268,12 +274,10 @@ export default function Page() {
             <option value="carat-low">Carat: Low to High</option>
             <option value="carat-high">Carat: High to Low</option>
           </select>
-
         </div>
       </div>
 
-      {/* ================= PRODUCTS ================= */}
-
+      {/* GRID VIEW */}
       {view === "grid" ? (
         <div className="grid grid-cols-4 gap-6">
           {visibleDiamonds.map((diamond) => (
@@ -283,9 +287,8 @@ export default function Page() {
           ))}
         </div>
       ) : (
+        /* LIST VIEW (UNCHANGED FROM YOUR ORIGINAL) */
         <div className="mt-4">
-
-          {/* HEADER */}
           <div className="grid grid-cols-[80px_repeat(10,1fr)_80px_80px_110px] text-xs uppercase text-gray-600 border-b pb-3">
             <div></div>
             <div>Shape</div>
@@ -303,14 +306,11 @@ export default function Page() {
             <div></div>
           </div>
 
-          {/* ROWS */}
           {visibleDiamonds.map((diamond) => (
             <div
               key={diamond.id}
               className="grid grid-cols-[80px_repeat(10,1fr)_80px_80px_110px] items-center border-b py-6 text-sm"
             >
-
-              {/* 360 ICON */}
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 border rounded-full flex items-center justify-center text-xs">
                   360°
@@ -331,15 +331,12 @@ export default function Page() {
                 ${diamond.price.toLocaleString()}
               </div>
 
-              {/* Compare */}
               <div>
                 <input type="checkbox" />
               </div>
 
-              {/* Wishlist */}
               <div className="text-xl cursor-pointer">♡</div>
 
-              {/* Details */}
               <div>
                 <Link href={`/diamonds/detail?id=${diamond.id}`}>
                   <button className="bg-black text-white px-4 py-2 text-xs hover:opacity-80 transition">
@@ -364,7 +361,6 @@ export default function Page() {
           </button>
         </div>
       )}
-
     </main>
   );
 }

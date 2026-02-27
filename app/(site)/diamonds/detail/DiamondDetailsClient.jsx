@@ -74,7 +74,28 @@ export default function DiamondDetailsClient() {
   }, [id]);
 
   if (!id) return <div className="p-10">No diamond selected.</div>;
-  if (loading) return <div className="p-10">Loading...</div>;
+  if (loading) {
+    return (
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 animate-pulse">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+
+          <div className="bg-gray-200 aspect-square rounded-xl" />
+
+          <div className="space-y-6">
+            <div className="h-8 bg-gray-200 rounded w-3/4" />
+            <div className="h-6 bg-gray-200 rounded w-1/3" />
+            <div className="h-12 bg-gray-200 rounded w-full mt-6" />
+            <div className="space-y-3 mt-8">
+              <div className="h-4 bg-gray-200 rounded w-full" />
+              <div className="h-4 bg-gray-200 rounded w-5/6" />
+              <div className="h-4 bg-gray-200 rounded w-4/6" />
+            </div>
+          </div>
+
+        </div>
+      </main>
+    );
+  }
   if (!diamond) return <div className="p-10">Diamond not found.</div>;
 
   const image =
@@ -195,11 +216,10 @@ export default function DiamondDetailsClient() {
                   image: image,
                 })
               }
-              className={`w-full py-4 uppercase tracking-widest text-sm transition ${
-                alreadyInCart
+              className={`w-full py-4 uppercase tracking-widest text-sm transition ${alreadyInCart
                   ? "bg-gray-300 cursor-not-allowed"
                   : "bg-black text-white hover:bg-gray-800"
-              }`}
+                }`}
             >
               {alreadyInCart ? "Already In Cart" : "Add To Cart"}
             </button>

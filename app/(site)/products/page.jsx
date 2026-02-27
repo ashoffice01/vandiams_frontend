@@ -161,7 +161,6 @@ export default function RingsPage() {
             </button>
           </div>
 
-          {/* Filter */}
           <button
             onClick={() => setShowFilter(true)}
             className="border px-4 py-1"
@@ -169,7 +168,6 @@ export default function RingsPage() {
             Filter
           </button>
 
-          {/* Sort */}
           <select
             onChange={(e) => setSort(e.target.value)}
             className="border px-2 py-1"
@@ -183,12 +181,9 @@ export default function RingsPage() {
       </div>
 
       {/* ================= FILTER PANEL ================= */}
-
       {showFilter && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
-
           <div className="bg-[#f3f3f3] w-full sm:w-[500px] h-full overflow-y-auto px-6 sm:px-10 py-10">
-
             <div className="flex justify-between mb-8">
               <button
                 onClick={() => {
@@ -203,14 +198,11 @@ export default function RingsPage() {
                 RESET
               </button>
 
-              <button onClick={() => setShowFilter(false)}>
-                ✕
-              </button>
+              <button onClick={() => setShowFilter(false)}>✕</button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
 
-              {/* Shape */}
               <div>
                 <h3 className="mb-4 font-medium">Shape</h3>
                 {["Round", "Oval", "Cushion"].map((shape) => (
@@ -230,7 +222,6 @@ export default function RingsPage() {
                 ))}
               </div>
 
-              {/* Metal */}
               <div>
                 <h3 className="mb-4 font-medium">Metal</h3>
                 {["Platinum", "Yellow Gold", "Rose Gold"].map((metal) => (
@@ -250,7 +241,6 @@ export default function RingsPage() {
                 ))}
               </div>
 
-              {/* Stone */}
               <div>
                 <h3 className="mb-4 font-medium">Stone</h3>
                 {["Diamond", "Gemstone"].map((stone) => (
@@ -270,7 +260,6 @@ export default function RingsPage() {
                 ))}
               </div>
 
-              {/* Price & Carat */}
               <div>
                 <h3 className="mb-4 font-medium">Price</h3>
                 <input
@@ -313,7 +302,6 @@ export default function RingsPage() {
                 VIEW {filteredProducts.length} DESIGNS
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -330,15 +318,21 @@ export default function RingsPage() {
         py-10 md:py-16">
 
         {loading ? (
-          <div className="col-span-full text-center py-20">
-            Loading products...
-          </div>
+          Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="animate-pulse border p-4 rounded-lg"
+            >
+              <div className="bg-gray-200 aspect-square mb-4 rounded"></div>
+              <div className="h-4 bg-gray-200 mb-2 rounded"></div>
+              <div className="h-4 bg-gray-200 w-1/2 rounded"></div>
+            </div>
+          ))
         ) : (
-          filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          filteredProducts.map((product) => (           
+            <ProductCard {...product} />           
           ))
         )}
-
       </div>
     </main>
   );

@@ -1,18 +1,31 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
-export default function ProductCard({ product }) {
-  const [selectedMetal, setSelectedMetal] = useState(product.metal);
-  const [selectedShape, setSelectedShape] = useState(product.shape);
-  const [selectedCarat, setSelectedCarat] = useState("1/2");
+export default function ProductCard({
+  id,
+  name,
+  price,
+  metal,
+  stone,
+  shape,
+  carat,
+  stock,
+  image,
+}) {
+  const [selectedMetal, setSelectedMetal] = useState(metal || "");
+  const [selectedShape, setSelectedShape] = useState(shape || "");
+  const [selectedCarat, setSelectedCarat] = useState(
+    carat ? String(carat) : "1/2"
+  );
   const [hovered, setHovered] = useState(false);
 
   /* =============================
      IMAGE (FROM WORDPRESS API)
   ============================== */
 
-  const currentImage = product.image;
+  const currentImage = image;
 
   const shapes = ["Round", "Oval", "Cushion"];
 
@@ -40,21 +53,27 @@ export default function ProductCard({ product }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
+         <Link            
+              href={`/products/detail?id=${id}`}
+            >
+            
+         
         <img
           src={currentImage || "/placeholder.jpg"}
-          alt={product.name}
+          alt={name}
           className="w-full h-full object-contain transition-opacity duration-500"
         />
+           </Link>
       </div>
 
       {/* TITLE */}
       <h3 className="text-sm sm:text-base md:text-lg mb-1 sm:mb-2 leading-tight">
-        {product.name}
+        {name}
       </h3>
 
       {/* PRICE */}
       <p className="font-semibold text-sm sm:text-base md:text-lg mb-3 sm:mb-4">
-        £{product.price}
+        £{price}
       </p>
 
       {/* SHAPE */}
@@ -63,18 +82,18 @@ export default function ProductCard({ product }) {
           Shape
         </div>
         <div className="flex flex-wrap gap-2 sm:gap-3">
-          {shapes.map((shape) => (
+          {shapes.map((s) => (
             <div
-              key={shape}
-              onClick={() => setSelectedShape(shape)}
+              key={s}
+              onClick={() => setSelectedShape(s)}
               className={`w-5 h-5 sm:w-8 sm:h-8 border flex items-center justify-center cursor-pointer text-[10px] sm:text-xs transition
               ${
-                selectedShape === shape
+                selectedShape === s
                   ? "border-black"
                   : "border-gray-300"
               }`}
             >
-              {shape.charAt(0)}
+              {s.charAt(0)}
             </div>
           ))}
         </div>
@@ -86,18 +105,18 @@ export default function ProductCard({ product }) {
           Metal
         </div>
         <div className="flex flex-wrap gap-2">
-          {metals.map((metal) => (
+          {metals.map((m) => (
             <div
-              key={metal}
-              onClick={() => setSelectedMetal(metal)}
+              key={m}
+              onClick={() => setSelectedMetal(m)}
               className={`px-1 sm:px-3 py-1 sm:py-2 border cursor-pointer text-[9px] sm:text-xs transition
               ${
-                selectedMetal === metal
+                selectedMetal === m
                   ? "border-black"
                   : "border-gray-300"
               }`}
             >
-              {metal}
+              {m}
             </div>
           ))}
         </div>
