@@ -117,7 +117,7 @@ export default function Page() {
 
   const COLOR_SCALE = ["J", "I", "H", "G", "F", "E", "D"];
   const CLARITY_SCALE = [
-    "I1","SI2","SI1","VS2","VS1","VVS2","VVS1","IF",
+    "I1", "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF",
   ];
   const CUT_SCALE = ["Good", "Very Good", "Excellent", "Ideal"];
   const POLISH_SCALE = ["Fair", "Good", "Very Good", "Excellent", "Ideal"];
@@ -232,41 +232,45 @@ export default function Page() {
 
       <FilterSection filters={filters} setFilters={setFilters} />
 
-      <div className="flex justify-between items-center mt-8 mb-6">
-        <p className="text-sm font-medium">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mt-8 mb-6">
+
+        {/* Diamonds Count */}
+        <p className="text-sm font-medium text-center sm:text-left">
           DIAMONDS AVAILABLE:{" "}
           <span className="font-semibold">
             {filteredDiamonds.length.toLocaleString()}
           </span>
         </p>
 
-        <div className="flex items-center gap-6">
-          <div className="flex border">
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
+
+          {/* Grid / List Toggle */}
+          <div className="flex border w-full sm:w-auto">
             <button
               onClick={() => setView("grid")}
-              className={`px-4 py-2 text-sm ${
-                view === "grid" ? "bg-black text-white" : "bg-white"
-              }`}
+              className={`flex-1 sm:flex-none px-4 py-2 text-sm ${view === "grid" ? "bg-black text-white" : "bg-white"
+                }`}
             >
               Grid
             </button>
 
             <button
               onClick={() => setView("list")}
-              className={`px-4 py-2 text-sm ${
-                view === "list" ? "bg-black text-white" : "bg-white"
-              }`}
+              className={`flex-1 sm:flex-none px-4 py-2 text-sm ${view === "list" ? "bg-black text-white" : "bg-white"
+                }`}
             >
               List
             </button>
           </div>
 
+          {/* Sort Dropdown */}
           <select
             value={filters.sort}
             onChange={(e) =>
               setFilters({ ...filters, sort: e.target.value })
             }
-            className="border px-3 py-2 text-sm"
+            className="border px-3 py-2 text-sm w-full sm:w-auto"
           >
             <option value="">Sort By</option>
             <option value="price-low">Price: Low to High</option>
@@ -274,12 +278,13 @@ export default function Page() {
             <option value="carat-low">Carat: Low to High</option>
             <option value="carat-high">Carat: High to Low</option>
           </select>
+
         </div>
       </div>
 
       {/* GRID VIEW */}
       {view === "grid" ? (
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {visibleDiamonds.map((diamond) => (
             <Link key={diamond.id} href={`/diamonds/detail?id=${diamond.id}`}>
               <DiamondCard {...diamond} />
@@ -289,7 +294,9 @@ export default function Page() {
       ) : (
         /* LIST VIEW (UNCHANGED FROM YOUR ORIGINAL) */
         <div className="mt-4">
-          <div className="grid grid-cols-[80px_repeat(10,1fr)_80px_80px_110px] text-xs uppercase text-gray-600 border-b pb-3">
+
+          {/* ===== DESKTOP HEADER ===== */}
+          <div className="hidden md:grid grid-cols-[80px_repeat(10,1fr)_80px_80px_110px] text-xs uppercase text-gray-600 border-b pb-3">
             <div></div>
             <div>Shape</div>
             <div>Carat</div>
@@ -307,43 +314,91 @@ export default function Page() {
           </div>
 
           {visibleDiamonds.map((diamond) => (
-            <div
-              key={diamond.id}
-              className="grid grid-cols-[80px_repeat(10,1fr)_80px_80px_110px] items-center border-b py-6 text-sm"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 border rounded-full flex items-center justify-center text-xs">
-                  360°
+            <div key={diamond.id}>
+
+              {/* ===== DESKTOP ROW ===== */}
+              <div className="hidden md:grid grid-cols-[80px_repeat(10,1fr)_80px_80px_110px] items-center border-b py-6 text-sm">
+
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 border rounded-full flex items-center justify-center text-xs">
+                    360°
+                  </div>
+                </div>
+
+                <div>{diamond.shape}</div>
+                <div>{diamond.carat} ct</div>
+                <div>{diamond.color}</div>
+                <div>{diamond.clarity}</div>
+                <div>{diamond.cut}</div>
+                <div>{diamond.report}</div>
+                <div>{diamond.polish}</div>
+                <div>{diamond.symmetry}</div>
+                <div>{diamond.depth}%</div>
+
+                <div className="font-semibold">
+                  ${diamond.price.toLocaleString()}
+                </div>
+
+                <div>
+                  <input type="checkbox" />
+                </div>
+
+                <div className="text-xl cursor-pointer">♡</div>
+
+                <div>
+                  <Link href={`/diamonds/detail?id=${diamond.id}`}>
+                    <button className="bg-black text-white px-4 py-2 text-xs hover:opacity-80 transition">
+                      DETAILS
+                    </button>
+                  </Link>
                 </div>
               </div>
 
-              <div>{diamond.shape}</div>
-              <div>{diamond.carat} ct</div>
-              <div>{diamond.color}</div>
-              <div>{diamond.clarity}</div>
-              <div>{diamond.cut}</div>
-              <div>{diamond.report}</div>
-              <div>{diamond.polish}</div>
-              <div>{diamond.symmetry}</div>
-              <div>{diamond.depth}%</div>
+              {/* ===== MOBILE CARD ===== */}
+              <div className="md:hidden border rounded-lg p-4 mb-4 space-y-4">
 
-              <div className="font-semibold">
-                ${diamond.price.toLocaleString()}
+                {/* Top Row */}
+                <div className="flex justify-between items-center">
+                  <div className="w-10 h-10 border rounded-full flex items-center justify-center text-xs">
+                    360°
+                  </div>
+
+                  <div className="text-lg font-semibold">
+                    ${diamond.price.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* Main Specs */}
+                <div className="grid grid-cols-2 gap-y-2 text-sm">
+                  <div><span className="text-gray-500">Shape:</span> {diamond.shape}</div>
+                  <div><span className="text-gray-500">Carat:</span> {diamond.carat} ct</div>
+                  <div><span className="text-gray-500">Color:</span> {diamond.color}</div>
+                  <div><span className="text-gray-500">Clarity:</span> {diamond.clarity}</div>
+                  <div><span className="text-gray-500">Cut:</span> {diamond.cut}</div>
+                  <div><span className="text-gray-500">Cert:</span> {diamond.report}</div>
+                  <div><span className="text-gray-500">Polish:</span> {diamond.polish}</div>
+                  <div><span className="text-gray-500">Symmetry:</span> {diamond.symmetry}</div>
+                  <div><span className="text-gray-500">Depth:</span> {diamond.depth}%</div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-between items-center pt-2">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" />
+                    Compare
+                  </label>
+
+                  <div className="text-xl cursor-pointer">♡</div>
+
+                  <Link href={`/diamonds/detail?id=${diamond.id}`}>
+                    <button className="bg-black text-white px-4 py-2 text-xs hover:opacity-80 transition">
+                      DETAILS
+                    </button>
+                  </Link>
+                </div>
+
               </div>
 
-              <div>
-                <input type="checkbox" />
-              </div>
-
-              <div className="text-xl cursor-pointer">♡</div>
-
-              <div>
-                <Link href={`/diamonds/detail?id=${diamond.id}`}>
-                  <button className="bg-black text-white px-4 py-2 text-xs hover:opacity-80 transition">
-                    DETAILS
-                  </button>
-                </Link>
-              </div>
             </div>
           ))}
         </div>

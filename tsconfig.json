@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "app/(site)/components/FilterSection.jsx", "app/(site)/diamonds/page.jsx", "app/(site)/components/ProductCard.jsx", "app/(site)/diamonds/detail/DiamondDetailsClient.jsx", "app/(site)/products/detail/ProductDetailClient.jsx", "app/(site)/products/detail/page.jsx"  ],
+, "app/(site)/components/FilterSection.jsx", "app/(site)/diamonds/page.jsx", "app/(site)/components/ProductCard.jsx", "app/(site)/diamonds/detail/DiamondDetailsClient.jsx", "app/(site)/products/detail/ProductDetailClient.jsx", "app/(site)/products/detail/page.jsx", "app/(site)/about/page.jsx"  ],
   "exclude": ["node_modules"]
 }
