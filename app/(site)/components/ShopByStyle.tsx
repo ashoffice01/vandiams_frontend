@@ -7,32 +7,32 @@ const categories = [
   {
     title: "Engagement Rings",
     image: "/style/engagement.jpg",
-    link: "/",
+    link: "/products",
   },
   {
     title: "Wedding Rings",
     image: "/style/wedding.jpg",
-    link: "/",
+    link: "/products",
   },
   {
     title: "Earrings",
     image: "/style/earrings.jpg",
-    link: "/",
+    link: "/products",
   },
   {
     title: "Bracelets",
     image: "/style/bracelets.jpg",
-    link: "/",
+    link: "/products",
   },
   {
     title: "Necklaces & Pendants",
     image: "/style/necklaces.jpg",
-    link: "/",
+    link: "/products",
   },
   {
     title: "Gemstones",
     image: "/style/gemstones.jpg",
-    link: "/",
+    link: "/products",
   },
 ];
 

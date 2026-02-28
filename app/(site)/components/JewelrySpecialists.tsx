@@ -20,7 +20,7 @@ export default function JewelrySpecialists() {
                         </p>
 
                         <Link
-                            href="/"
+                            href="/contact"
                             className="inline-block border-b border-black text-sm tracking-widest uppercase pb-1 hover:opacity-70 transition"
                         >
                             Book An Appointment

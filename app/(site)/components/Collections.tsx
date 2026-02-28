@@ -81,7 +81,8 @@ export default function Collections() {
             {collections.map((c, i) => (
               <Link
                 key={c.id}
-                href={c.acf?.link_url || `/collection/${c.slug}`}
+                // href={c.acf?.link_url || `/collection/${c.slug}`}
+                href={`/products`}
                 className={`relative flex-shrink-0 snap-start group
                   ${i === 0 ? "w-[75%]" : "w-[45%]"}
                 `}

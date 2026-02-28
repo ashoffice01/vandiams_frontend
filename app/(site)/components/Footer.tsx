@@ -93,7 +93,7 @@ export default function Footer() {
               <li><Link href="#">Affiliates</Link></li>
               <li><Link href="#">Email Us</Link></li>
               <li><Link href="#">Live Chat</Link></li>
-              <li><Link href="#">Book an Appointment</Link></li>
+              <li><Link href="/contact">Book an Appointment</Link></li>
               <li><Link href="#">Store Locator</Link></li>
               <li><Link href="#">Careers</Link></li>
             </ul>
