@@ -12,7 +12,6 @@ export default function ProductCard({
   variants = [],
 }) {
 
-  console.log("variants", variants);
   /* =============================
      BUILD OPTIONS FROM VARIANTS
   ============================== */
@@ -43,7 +42,13 @@ export default function ProductCard({
   }, [variants, selectedShape, selectedMetal, selectedCarat]);
 
   const displayPrice = activeVariant?.price ?? price;
-  const displayImage = activeVariant?.image ?? image;
+
+  const displayImage =
+    activeVariant?.image ||
+    image ||
+    "/placeholder.jpg";
+
+  const displayTitle = `${name} - ${selectedShape} - ${selectedMetal.replace("_", " ")} - ${selectedCarat}`;
   const inStock = activeVariant?.stock ?? stock;
 
   /* =============================
@@ -110,7 +115,7 @@ export default function ProductCard({
 
       {/* TITLE */}
       <h3 className="text-sm sm:text-base md:text-lg mb-1 sm:mb-2 leading-tight">
-        {name}
+        {displayTitle}
       </h3>
 
       {/* PRICE */}

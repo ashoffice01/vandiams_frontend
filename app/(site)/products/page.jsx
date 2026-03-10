@@ -56,32 +56,46 @@ export default function RingsPage() {
 
         const [productRes, variantRes] = await Promise.all([
           fetch("https://vandiams.com/cms/wp-json/wp/v2/product?_embed&per_page=100"),
-          fetch("https://vandiams.com/cms/wp-json/wp/v2/product_variant?per_page=100")
+          fetch("https://vandiams.com/cms/wp-json/wp/v2/product_variant?_embed&per_page=100")
         ]);
 
         const productData = await productRes.json();
         const variantData = await variantRes.json();
 
+        // BUILD VARIANT INDEX
+        const variantsByProduct = {};
+
+        variantData.forEach(v => {
+          const pid = v.acf?.product;
+          if (!variantsByProduct[pid]) variantsByProduct[pid] = [];
+          variantsByProduct[pid].push(v);
+        });
+
         const formattedProducts = productData.map((item) => {
 
-          const variants = variantData
-            .filter(v => v.acf?.product === item.id)
-            .map(v => ({
-              shape: v.acf?.shape || "",
-              metal: v.acf?.metal || "",
-              carat: String(v.acf?.carat || ""),
-              price: Number(v.acf?.price) || 0,
-              stock:
-                v.acf?.stock === true ||
-                v.acf?.stock === 1 ||
-                v.acf?.stock === "1",
-              image: v.acf?.image?.url || null
-            }));
+          const variants = (variantsByProduct[item.id] || []).map(v => ({
+            shape: v.acf?.shape || "",
+            metal: v.acf?.metal || "",
+            carat: String(v.acf?.carat || ""),
+            price: Number(v.acf?.price) || 0,
+
+            stock:
+              v.acf?.stock === true ||
+              v.acf?.stock === 1 ||
+              v.acf?.stock === "1",
+
+            image:
+              v._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
+              null,
+
+            title: v.title?.rendered
+          }));
 
           return {
             id: item.id,
             name: item.title?.rendered || "Product",
             price: Number(item.acf?.price) || 0,
+
             metal: Array.isArray(item.acf?.metal)
               ? item.acf.metal
               : item.acf?.metal
@@ -95,22 +109,25 @@ export default function RingsPage() {
                 : [],
 
             shape: Array.isArray(item.acf?.shape)
-              ? item.acf.shape
+              ? item.acf.shape.map(s => s.toLowerCase())
               : item.acf?.shape
-                ? [item.acf.shape]
+                ? [item.acf.shape.toLowerCase()]
                 : [],
+
             carat: Number(item.acf?.carat) || 0,
+
             stock:
               item.acf?.stock === true ||
               item.acf?.stock === 1 ||
               item.acf?.stock === "1" ||
               item.acf?.stock === "true",
+
             image:
               item._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
               "/placeholder.jpg",
+
             variants
           };
-
         });
 
         setProducts(formattedProducts);
@@ -133,7 +150,11 @@ export default function RingsPage() {
     let result = [...products];
 
     if (inStockOnly) {
-      result = result.filter((p) => p.stock === true);
+      result = result.filter(
+        (p) =>
+          p.stock === true ||
+          p.variants?.some(v => v.stock === true)
+      );
     }
 
     if (selectedMetal.length > 0) {
@@ -154,13 +175,19 @@ export default function RingsPage() {
       );
     }
 
-    result = result.filter(
-      (p) =>
-        p.price >= priceRange[0] &&
-        p.price <= priceRange[1] &&
+    result = result.filter((p) => {
+
+      const minVariantPrice = p.variants?.length
+        ? Math.min(...p.variants.map(v => v.price))
+        : p.price;
+
+      return (
+        minVariantPrice >= priceRange[0] &&
+        minVariantPrice <= priceRange[1] &&
         p.carat >= caratRange[0] &&
         p.carat <= caratRange[1]
-    );
+      );
+    });
 
     switch (sort) {
       case "low":
@@ -284,9 +311,9 @@ export default function RingsPage() {
                 <label key={shape} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    checked={selectedShape.includes(shape)}
+                    checked={selectedShape.includes(shape.toLowerCase())}
                     onChange={() =>
-                      toggleArrayValue(shape, selectedShape, setSelectedShape)
+                      toggleArrayValue(shape.toLowerCase(), selectedShape, setSelectedShape)
                     }
                   />
                   {shape}
@@ -400,11 +427,7 @@ export default function RingsPage() {
 
         {!loading &&
           visibleProducts.map((product) => (
-            <ProductCard
-  key={product.id}
-  {...product}
-  variants={product.variants}
-/>
+            <ProductCard key={product.id} {...product} />
           ))}
       </div>
 
