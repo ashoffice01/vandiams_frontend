@@ -3,75 +3,105 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 type CartItem = {
-  cartId: string;   // ✅ unique per row
-  productId: string;
+  cartId: string;
   name: string;
   price: string;
   image: string;
+  quantity: number;
 };
-
 
 type CartContextType = {
   items: CartItem[];
-addToCart: (item: Omit<CartItem, "cartId">) => void;
-
+  addToCart: (item: Omit<CartItem, "quantity">) => void;
   removeFromCart: (id: string) => void;
+  updateQuantity: (id: string, qty: number) => void;
+  clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // ✅ Load cart on first render
-useEffect(() => {
-  const stored = localStorage.getItem("vandiams-cart");
-  if (stored) {
-    const parsed = JSON.parse(stored);
-
-    const normalized = parsed.map((item: any) => ({
-      cartId: item.cartId ?? crypto.randomUUID(),
-      productId: item.productId ?? item.id,
-      name: item.name,
-      price: item.price,
-      image: item.image,
-    }));
-
-    setItems(normalized);
-  }
-}, []);
-
-
-  // ✅ Save cart on change
+  /* Load cart from localStorage */
   useEffect(() => {
-    localStorage.setItem("vandiams-cart", JSON.stringify(items));
+    const saved = localStorage.getItem("cart");
+    if (saved) setItems(JSON.parse(saved));
+  }, []);
+
+  /* Save cart to localStorage */
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(items));
   }, [items]);
 
-const addToCart = (item: Omit<CartItem, "cartId">) => {
-  setItems((prev) => [
-    ...prev,
-    {
-      ...item,
-      cartId: crypto.randomUUID(), // ✅ unique
-    },
-  ]);
-};
+  /* Add to cart */
+  const addToCart = (item: Omit<CartItem, "quantity">) => {
 
-const removeFromCart = (cartId: string) => {
-  setItems((prev) => prev.filter((item) => item.cartId !== cartId));
-};
+    setItems((prev) => {
+
+      const existing = prev.find((i) => i.cartId === item.cartId);
+
+      if (existing) {
+        return prev.map((i) =>
+          i.cartId === item.cartId
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
+        );
+      }
+
+      return [...prev, { ...item, quantity: 1 }];
+    });
+
+  };
+
+  /* Remove item */
+  const removeFromCart = (id: string) => {
+    setItems((prev) => prev.filter((item) => item.cartId !== id));
+  };
+
+  /* Update quantity */
+  const updateQuantity = (id: string, qty: number) => {
+
+    if (qty < 1) return;
+
+    setItems((prev) =>
+      prev.map((item) =>
+        item.cartId === id
+          ? { ...item, quantity: qty }
+          : item
+      )
+    );
+
+  };
+
+  /* Clear cart */
+  const clearCart = () => {
+    setItems([]);
+  };
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart }}>
+    <CartContext.Provider
+      value={{
+        items,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
+
 }
 
 export function useCart() {
+
   const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used within CartProvider");
-  }
+
+  if (!context) throw new Error("CartProvider missing");
+
   return context;
+
 }

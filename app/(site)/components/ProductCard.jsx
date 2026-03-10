@@ -1,43 +1,93 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 
 export default function ProductCard({
   id,
   name,
   price,
-  metal,
-  stone,
-  shape,
-  carat,
-  stock,
   image,
+  stock,
+  variants = [],
 }) {
-  const [selectedMetal, setSelectedMetal] = useState(metal || "");
-  const [selectedShape, setSelectedShape] = useState(shape || "");
-  const [selectedCarat, setSelectedCarat] = useState(
-    carat ? String(carat) : "1/2"
-  );
-  const [hovered, setHovered] = useState(false);
 
+  console.log("variants", variants);
   /* =============================
-     IMAGE (FROM WORDPRESS API)
+     BUILD OPTIONS FROM VARIANTS
   ============================== */
 
-  const currentImage = image;
+  const shapes = [...new Set(variants.map(v => v.shape))];
+  const metals = [...new Set(variants.map(v => v.metal))];
+  const carats = [...new Set(variants.map(v => String(v.carat)))];
 
-  const shapes = ["Round", "Oval", "Cushion"];
+  /* =============================
+     DEFAULT SELECTION
+  ============================== */
 
-  const metals = [
-    "Platinum",
-    "Yellow Gold",
-    "Rose Gold",
-    "White Gold",
-    "Sterling Silver",
-  ];
+  const [selectedShape, setSelectedShape] = useState(shapes[0] || "");
+  const [selectedMetal, setSelectedMetal] = useState(metals[0] || "");
+  const [selectedCarat, setSelectedCarat] = useState(carats[0] || "");
 
-  const carats = ["1/2", "1", "1½", "2"];
+  /* =============================
+     FIND ACTIVE VARIANT
+  ============================== */
+
+  const activeVariant = useMemo(() => {
+    return variants.find(
+      v =>
+        v.shape === selectedShape &&
+        v.metal === selectedMetal &&
+        String(v.carat) === selectedCarat
+    );
+  }, [variants, selectedShape, selectedMetal, selectedCarat]);
+
+  const displayPrice = activeVariant?.price ?? price;
+  const displayImage = activeVariant?.image ?? image;
+  const inStock = activeVariant?.stock ?? stock;
+
+  /* =============================
+     VALID OPTION CHECK
+  ============================== */
+
+  const isShapeAvailable = (shape) =>
+    variants.some(
+      v =>
+        v.shape === shape &&
+        v.metal === selectedMetal
+    );
+
+  const isMetalAvailable = (metal) =>
+    variants.some(
+      v =>
+        v.shape === selectedShape &&
+        v.metal === metal
+    );
+
+  const isCaratAvailable = (carat) =>
+    variants.some(
+      v =>
+        v.shape === selectedShape &&
+        v.metal === selectedMetal &&
+        String(v.carat) === carat
+    );
+
+
+  useEffect(() => {
+
+    const validCarats = variants
+      .filter(
+        v =>
+          v.shape === selectedShape &&
+          v.metal === selectedMetal
+      )
+      .map(v => String(v.carat));
+
+    if (!validCarats.includes(selectedCarat)) {
+      setSelectedCarat(validCarats[0] || "");
+    }
+
+  }, [selectedShape, selectedMetal, variants]);
 
   return (
     <div className="bg-white w-full text-xs sm:text-sm md:text-base">
@@ -48,22 +98,14 @@ export default function ProductCard({
       </div>
 
       {/* IMAGE */}
-      <div
-        className="aspect-square bg-gray-100 flex items-center justify-center mb-3 sm:mb-6 relative overflow-hidden"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-      >
-         <Link            
-              href={`/products/detail?id=${id}`}
-            >
-            
-         
-        <img
-          src={currentImage || "/placeholder.jpg"}
-          alt={name}
-          className="w-full h-full object-contain transition-opacity duration-500"
-        />
-           </Link>
+      <div className="aspect-square bg-gray-100 flex items-center justify-center mb-3 sm:mb-6 relative overflow-hidden">
+        <Link href={`/products/detail?id=${id}`}>
+          <img
+            src={displayImage || "/placeholder.jpg"}
+            alt={name}
+            className="w-full h-full object-contain transition-opacity duration-500"
+          />
+        </Link>
       </div>
 
       {/* TITLE */}
@@ -73,7 +115,7 @@ export default function ProductCard({
 
       {/* PRICE */}
       <p className="font-semibold text-sm sm:text-base md:text-lg mb-3 sm:mb-4">
-        £{price}
+        £{displayPrice}
       </p>
 
       {/* SHAPE */}
@@ -81,21 +123,25 @@ export default function ProductCard({
         <div className="text-[11px] sm:text-sm text-gray-500 mb-1 sm:mb-2">
           Shape
         </div>
+
         <div className="flex flex-wrap gap-2 sm:gap-3">
-          {shapes.map((s) => (
-            <div
-              key={s}
-              onClick={() => setSelectedShape(s)}
-              className={`w-5 h-5 sm:w-8 sm:h-8 border flex items-center justify-center cursor-pointer text-[10px] sm:text-xs transition
-              ${
-                selectedShape === s
-                  ? "border-black"
-                  : "border-gray-300"
-              }`}
-            >
-              {s.charAt(0)}
-            </div>
-          ))}
+          {shapes.map((s) => {
+
+            const disabled = !isShapeAvailable(s);
+
+            return (
+              <div
+                key={s}
+                onClick={() => !disabled && setSelectedShape(s)}
+                className={`w-5 h-5 sm:w-8 sm:h-8 border flex items-center justify-center cursor-pointer text-[10px] sm:text-xs transition
+                ${selectedShape === s ? "border-black" : "border-gray-300"}
+                ${disabled ? "opacity-30 cursor-not-allowed" : ""}
+                `}
+              >
+                {s.charAt(0).toUpperCase()}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -104,21 +150,25 @@ export default function ProductCard({
         <div className="text-[11px] sm:text-sm text-gray-500 mb-1 sm:mb-2">
           Metal
         </div>
+
         <div className="flex flex-wrap gap-2">
-          {metals.map((m) => (
-            <div
-              key={m}
-              onClick={() => setSelectedMetal(m)}
-              className={`px-1 sm:px-3 py-1 sm:py-2 border cursor-pointer text-[9px] sm:text-xs transition
-              ${
-                selectedMetal === m
-                  ? "border-black"
-                  : "border-gray-300"
-              }`}
-            >
-              {m}
-            </div>
-          ))}
+          {metals.map((m) => {
+
+            const disabled = !isMetalAvailable(m);
+
+            return (
+              <div
+                key={m}
+                onClick={() => !disabled && setSelectedMetal(m)}
+                className={`px-1 sm:px-3 py-1 sm:py-2 border cursor-pointer text-[9px] sm:text-xs transition
+                ${selectedMetal === m ? "border-black" : "border-gray-300"}
+                ${disabled ? "opacity-30 cursor-not-allowed" : ""}
+                `}
+              >
+                {m.replace("_", " ")}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -127,27 +177,35 @@ export default function ProductCard({
         <div className="text-[11px] sm:text-sm text-gray-500 mb-1 sm:mb-2">
           Carat
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {carats.map((c) => (
-            <div
-              key={c}
-              onClick={() => setSelectedCarat(c)}
-              className={`px-1 sm:px-4 py-1 sm:py-2 border cursor-pointer text-[10px] sm:text-sm transition
-              ${
-                selectedCarat === c
-                  ? "border-black"
-                  : "border-gray-300"
-              }`}
-            >
-              {c}
-            </div>
-          ))}
 
-          <span className="text-base sm:text-lg cursor-pointer">
-            ›
-          </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {carats.map((c) => {
+
+            const disabled = !isCaratAvailable(c);
+
+            return (
+              <div
+                key={c}
+                onClick={() => !disabled && setSelectedCarat(c)}
+                className={`px-1 sm:px-4 py-1 sm:py-2 border cursor-pointer text-[10px] sm:text-sm transition
+                ${selectedCarat === c ? "border-black" : "border-gray-300"}
+                ${disabled ? "opacity-30 cursor-not-allowed" : ""}
+                `}
+              >
+                {c}
+              </div>
+            );
+          })}
+
+          <span className="text-base sm:text-lg cursor-pointer">›</span>
         </div>
       </div>
+
+      {!inStock && (
+        <div className="text-red-500 text-xs mt-2">
+          Out of stock
+        </div>
+      )}
     </div>
   );
 }

@@ -18,11 +18,10 @@ export default function RingsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ NEW: Pagination
   const [visibleCount, setVisibleCount] = useState(12);
 
   /* =============================
-     VALUE MAPS (SLUG -> LABEL)
+     VALUE MAPS
   ============================== */
 
   const METALS = [
@@ -48,37 +47,74 @@ export default function RingsPage() {
   ];
 
   /* =============================
-     FETCH PRODUCTS
+     FETCH PRODUCTS + VARIANTS
   ============================== */
 
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const res = await fetch(
-          "https://vandiams.com/cms/wp-json/wp/v2/product?_embed"
-        );
 
-        const data = await res.json();
+        const [productRes, variantRes] = await Promise.all([
+          fetch("https://vandiams.com/cms/wp-json/wp/v2/product?_embed&per_page=100"),
+          fetch("https://vandiams.com/cms/wp-json/wp/v2/product_variant?per_page=100")
+        ]);
 
-        const formattedProducts = data.map((item) => ({
-          id: item.id,
-          name: item.title?.rendered || "Product",
-          price: Number(item.acf?.price) || 0,
-          metal: item.acf?.metal || [],
-          stone: item.acf?.stone || [],
-          shape: item.acf?.shape || [],
-          carat: Number(item.acf?.carat) || 0,
-          stock:
-            item.acf?.stock === true ||
-            item.acf?.stock === 1 ||
-            item.acf?.stock === "1" ||
-            item.acf?.stock === "true",
-          image:
-            item._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
-            "/placeholder.jpg",
-        }));
+        const productData = await productRes.json();
+        const variantData = await variantRes.json();
+
+        const formattedProducts = productData.map((item) => {
+
+          const variants = variantData
+            .filter(v => v.acf?.product === item.id)
+            .map(v => ({
+              shape: v.acf?.shape || "",
+              metal: v.acf?.metal || "",
+              carat: String(v.acf?.carat || ""),
+              price: Number(v.acf?.price) || 0,
+              stock:
+                v.acf?.stock === true ||
+                v.acf?.stock === 1 ||
+                v.acf?.stock === "1",
+              image: v.acf?.image?.url || null
+            }));
+
+          return {
+            id: item.id,
+            name: item.title?.rendered || "Product",
+            price: Number(item.acf?.price) || 0,
+            metal: Array.isArray(item.acf?.metal)
+              ? item.acf.metal
+              : item.acf?.metal
+                ? [item.acf.metal]
+                : [],
+
+            stone: Array.isArray(item.acf?.stone)
+              ? item.acf.stone
+              : item.acf?.stone
+                ? [item.acf.stone]
+                : [],
+
+            shape: Array.isArray(item.acf?.shape)
+              ? item.acf.shape
+              : item.acf?.shape
+                ? [item.acf.shape]
+                : [],
+            carat: Number(item.acf?.carat) || 0,
+            stock:
+              item.acf?.stock === true ||
+              item.acf?.stock === 1 ||
+              item.acf?.stock === "1" ||
+              item.acf?.stock === "true",
+            image:
+              item._embedded?.["wp:featuredmedia"]?.[0]?.source_url ||
+              "/placeholder.jpg",
+            variants
+          };
+
+        });
 
         setProducts(formattedProducts);
+
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -152,7 +188,6 @@ export default function RingsPage() {
     caratRange,
   ]);
 
-  // ✅ Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(12);
   }, [
@@ -179,56 +214,49 @@ export default function RingsPage() {
     <main className="min-h-screen bg-white">
 
       {/* TOP BAR */}
-<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 px-4 sm:px-6 py-4 border-b text-sm">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 px-4 sm:px-6 py-4 border-b text-sm">
 
-  {/* Items Count */}
-  <div className="text-center sm:text-left">
-    {filteredProducts.length} Items
-  </div>
+        <div className="text-center sm:text-left">
+          {filteredProducts.length} Items
+        </div>
 
-  {/* Controls */}
-  <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
 
-    {/* In-Stock Toggle */}
-    <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
-      <span>In-Stock</span>
-      <button
-        onClick={() => setInStockOnly(!inStockOnly)}
-        className={`w-10 h-5 rounded-full relative transition ${
-          inStockOnly ? "bg-black" : "bg-gray-300"
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition ${
-            inStockOnly ? "right-0.5" : "left-0.5"
-          }`}
-        />
-      </button>
-    </div>
+          <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+            <span>In-Stock</span>
+            <button
+              onClick={() => setInStockOnly(!inStockOnly)}
+              className={`w-10 h-5 rounded-full relative transition ${inStockOnly ? "bg-black" : "bg-gray-300"
+                }`}
+            >
+              <span
+                className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition ${inStockOnly ? "right-0.5" : "left-0.5"
+                  }`}
+              />
+            </button>
+          </div>
 
-    {/* Filter Button */}
-    <button
-      onClick={() => setShowFilter(true)}
-      className="border px-4 py-2 w-full sm:w-auto"
-    >
-      Filter
-    </button>
+          <button
+            onClick={() => setShowFilter(true)}
+            className="border px-4 py-2 w-full sm:w-auto"
+          >
+            Filter
+          </button>
 
-    {/* Sort Dropdown */}
-    <select
-      onChange={(e) => setSort(e.target.value)}
-      className="border px-3 py-2 w-full sm:w-auto"
-    >
-      <option value="best">Best Sellers</option>
-      <option value="new">Newest</option>
-      <option value="low">Price: Low to High</option>
-      <option value="high">Price: High to Low</option>
-    </select>
+          <select
+            onChange={(e) => setSort(e.target.value)}
+            className="border px-3 py-2 w-full sm:w-auto"
+          >
+            <option value="best">Best Sellers</option>
+            <option value="new">Newest</option>
+            <option value="low">Price: Low to High</option>
+            <option value="high">Price: High to Low</option>
+          </select>
 
-  </div>
-</div>
+        </div>
+      </div>
 
-      {/* FILTER PANEL */}
+      {/* FILTER PANEL — UNCHANGED */}
       {showFilter && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
           <div className="bg-[#f3f3f3] w-full sm:w-[600px] h-full overflow-y-auto p-8">
@@ -372,7 +400,11 @@ export default function RingsPage() {
 
         {!loading &&
           visibleProducts.map((product) => (
-            <ProductCard key={product.id} {...product} />
+            <ProductCard
+  key={product.id}
+  {...product}
+  variants={product.variants}
+/>
           ))}
       </div>
 

@@ -85,15 +85,25 @@ export default function CustomDesignPage() {
     formData.append("metal", metal);
     formData.append("budget", budget);
     formData.append("notes", notes);
-    if (file) formData.append("image", file);
 
-    const res = await fetch("/api/custom-design", {
-      method: "POST",
-      body: formData,
-    });
+    if (file) {
+      formData.append("image", file);
+    }
 
-    if (res.ok) {
-      setSubmitted(true);
+    try {
+      const res = await fetch(
+        "https://vandiams.com/cms/wp-json/custom/v1/design",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (res.ok) {
+        setSubmitted(true);
+      }
+    } catch (error) {
+      console.error(error);
     }
 
     setSubmitting(false);
@@ -238,14 +248,16 @@ export default function CustomDesignPage() {
             onChange={(e) => setNotes(e.target.value)}
           />
 
+
+
           {/* AI Button */}
-          <button
+          {/* <button
             type="button"
             onClick={generateDesign}
             className="w-full py-4 border border-black text-sm tracking-widest uppercase"
           >
             {loading ? "Designing with AI..." : "Generate AI Design Suggestion"}
-          </button>
+          </button> */}
 
           {aiSuggestion && (
             <div className="border p-8 bg-neutral-50">
@@ -265,13 +277,24 @@ export default function CustomDesignPage() {
             {submitting ? "Submitting..." : "Submit Design Request"}
           </button>
 
-          {/* Optional CTA */}
-          <p className="text-center text-sm text-gray-500">
-            Prefer to talk it through?{" "}
-            <Link href="/" className="underline">
+          <button
+            type="reset"
+            disabled={submitting}
+            className="w-full py-4 border border-black text-sm tracking-widest uppercase"
+          >
+            <Link
+              href="/contact">
               Book a consultation
             </Link>
-          </p>
+          </button>
+
+          {/* Optional CTA */}
+          {/* <p className="text-center text-sm text-gray-500">
+            Prefer to talk it through?{" "}
+            <Link href="/contact" className="underline">
+              Book a consultation
+            </Link>
+          </p> */}
         </form>
       )}
     </section>
