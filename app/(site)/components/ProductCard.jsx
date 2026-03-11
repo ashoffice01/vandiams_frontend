@@ -114,18 +114,18 @@ export default function ProductCard({
       </div>
 
       {/* TITLE */}
-      <h3 className="text-sm sm:text-base md:text-lg mb-1 sm:mb-2 leading-tight">
+      <h3 className="text-sm sm:text-base md:text-sm mb-1 sm:mb-1 leading-tight">
         {displayTitle}
       </h3>
 
       {/* PRICE */}
-      <p className="font-semibold text-sm sm:text-base md:text-lg mb-3 sm:mb-4">
-        £{displayPrice}
+      <p className="font-semibold text-sm sm:text-base md:text-lg mb-2 sm:mb-2">
+        ${displayPrice}
       </p>
 
       {/* SHAPE */}
-      <div className="mb-3 sm:mb-4">
-        <div className="text-[11px] sm:text-sm text-gray-500 mb-1 sm:mb-2">
+      <div className="mb-2 sm:mb-2">
+        <div className="text-[11px] sm:text-sm text-gray-500 mb-1 sm:mb-1">
           Shape
         </div>
 
@@ -138,7 +138,7 @@ export default function ProductCard({
               <div
                 key={s}
                 onClick={() => !disabled && setSelectedShape(s)}
-                className={`w-5 h-5 sm:w-8 sm:h-8 border flex items-center justify-center cursor-pointer text-[10px] sm:text-xs transition
+                className={`w-5 h-3 sm:w-5 sm:h-5 border flex items-center justify-center cursor-pointer text-[10px] sm:text-xs transition
                 ${selectedShape === s ? "border-black" : "border-gray-300"}
                 ${disabled ? "opacity-30 cursor-not-allowed" : ""}
                 `}
@@ -151,8 +151,8 @@ export default function ProductCard({
       </div>
 
       {/* METAL */}
-      <div className="mb-3 sm:mb-4">
-        <div className="text-[11px] sm:text-sm text-gray-500 mb-1 sm:mb-2">
+      <div className="mb-2 sm:mb-2">
+        <div className="text-[11px] sm:text-sm text-gray-500 mb-1 sm:mb-1">
           Metal
         </div>
 
@@ -165,7 +165,7 @@ export default function ProductCard({
               <div
                 key={m}
                 onClick={() => !disabled && setSelectedMetal(m)}
-                className={`px-1 sm:px-3 py-1 sm:py-2 border cursor-pointer text-[9px] sm:text-xs transition
+                className={`px-1 sm:px-3 py-1 sm:py-1 border cursor-pointer text-[9px] sm:text-xs transition
                 ${selectedMetal === m ? "border-black" : "border-gray-300"}
                 ${disabled ? "opacity-30 cursor-not-allowed" : ""}
                 `}
@@ -179,7 +179,7 @@ export default function ProductCard({
 
       {/* CARAT */}
       <div>
-        <div className="text-[11px] sm:text-sm text-gray-500 mb-1 sm:mb-2">
+        <div className="text-[11px] sm:text-sm text-gray-500 mb-1 sm:mb-1">
           Carat
         </div>
 
@@ -192,7 +192,7 @@ export default function ProductCard({
               <div
                 key={c}
                 onClick={() => !disabled && setSelectedCarat(c)}
-                className={`px-1 sm:px-4 py-1 sm:py-2 border cursor-pointer text-[10px] sm:text-sm transition
+                className={`px-1 sm:px-4 py-1 sm:py-1 border cursor-pointer text-[10px] sm:text-sm transition
                 ${selectedCarat === c ? "border-black" : "border-gray-300"}
                 ${disabled ? "opacity-30 cursor-not-allowed" : ""}
                 `}
