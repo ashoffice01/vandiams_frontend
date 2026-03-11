@@ -131,7 +131,7 @@ export default function CustomDesignPage() {
           </p>
 
           <Link
-            href="/book-appointment"
+            href="/contact"
             className="inline-block border border-black px-8 py-3 text-sm tracking-widest uppercase"
           >
             Book Consultation
